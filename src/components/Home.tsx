@@ -4,11 +4,13 @@ import { SENTENCES } from '../data/sentences'
 
 interface HomeProps {
   progress: Progress
+  dueCount: number
   onNavigate: (view: string) => void
+  onStartReview: () => void
   onReset: () => void
 }
 
-export function Home({ progress, onNavigate, onReset }: HomeProps) {
+export function Home({ progress, dueCount, onNavigate, onStartReview, onReset }: HomeProps) {
   const knownCount = Object.values(progress.wordStatus).filter((s) => s === 'known').length
   const learningCount = Object.values(progress.wordStatus).filter((s) => s === 'learning').length
   const { correct, total } = progress.quizStats
@@ -37,6 +39,19 @@ export function Home({ progress, onNavigate, onReset }: HomeProps) {
           Welcome! Learn Bahasa Indonesia through flashcards, quizzes, and sentence puzzles.
         </p>
       </div>
+
+      {dueCount > 0 && (
+        <button className="review-banner" onClick={onStartReview}>
+          <span className="review-banner-icon">⏰</span>
+          <span className="review-banner-text">
+            <strong>
+              {dueCount} word{dueCount === 1 ? '' : 's'} due for review
+            </strong>
+            <span>Tap to review words right before you forget them</span>
+          </span>
+          <span className="review-banner-go">Review →</span>
+        </button>
+      )}
 
       <div className="stats-grid">
         <div className="stat-card">

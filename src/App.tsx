@@ -8,6 +8,7 @@ import { Vocabulary } from './components/Vocabulary'
 import { News } from './components/News'
 import { Grammar } from './components/Grammar'
 import { NumbersTime } from './components/NumbersTime'
+import { dueCount } from './srs'
 import './App.css'
 
 type View =
@@ -33,6 +34,7 @@ const NAV_ITEMS: { view: View; label: string; emoji: string }[] = [
 
 export default function App() {
   const [view, setView] = useState<View>('home')
+  const [startInReview, setStartInReview] = useState(false)
   const [theme, setTheme] = useState<'light' | 'dark'>(() =>
     document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
   )
@@ -43,7 +45,7 @@ export default function App() {
   }, [theme])
   const {
     progress,
-    setWordStatus,
+    reviewWord,
     recordQuizAnswer,
     recordGrammarAnswer,
     markSentenceSolved,
@@ -52,10 +54,21 @@ export default function App() {
     resetProgress,
   } = useProgress()
 
+  // navigate normally (resets any pending review launch)
+  const navigate = (v: View) => {
+    setStartInReview(false)
+    setView(v)
+  }
+
+  const startReview = () => {
+    setStartInReview(true)
+    setView('flashcards')
+  }
+
   return (
     <div className="app">
       <header className="app-header">
-        <button className="brand" onClick={() => setView('home')}>
+        <button className="brand" onClick={() => navigate('home')}>
           <span className="brand-flag">🇮🇩</span> Belajar!
         </button>
         <nav className="app-nav">
@@ -63,7 +76,7 @@ export default function App() {
             <button
               key={item.view}
               className={`nav-btn ${view === item.view ? 'nav-btn-active' : ''}`}
-              onClick={() => setView(item.view)}
+              onClick={() => navigate(item.view)}
             >
               <span className="nav-emoji">{item.emoji}</span>
               <span className="nav-label">{item.label}</span>
@@ -82,13 +95,21 @@ export default function App() {
 
       <main className="app-main">
         {view === 'home' && (
-          <Home progress={progress} onNavigate={(v) => setView(v as View)} onReset={resetProgress} />
+          <Home
+            progress={progress}
+            dueCount={dueCount(progress.srs)}
+            onNavigate={(v) => navigate(v as View)}
+            onStartReview={startReview}
+            onReset={resetProgress}
+          />
         )}
         {view === 'flashcards' && (
           <Flashcards
             wordStatus={progress.wordStatus}
             savedWords={progress.savedWords}
-            onSetStatus={setWordStatus}
+            srs={progress.srs}
+            startInReview={startInReview}
+            onReview={reviewWord}
           />
         )}
         {view === 'quiz' && <Quiz savedWords={progress.savedWords} onAnswer={recordQuizAnswer} />}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { Progress, Word, WordStatus } from '../types'
+import { schedule } from '../srs'
 
 const STORAGE_KEY = 'bahasa-learner-progress'
 
@@ -9,6 +10,7 @@ const DEFAULT_PROGRESS: Progress = {
   grammarStats: { correct: 0, total: 0 },
   sentencesSolved: [],
   savedWords: [],
+  srs: {},
 }
 
 function loadProgress(): Progress {
@@ -22,6 +24,7 @@ function loadProgress(): Progress {
       grammarStats: parsed.grammarStats ?? { correct: 0, total: 0 },
       sentencesSolved: parsed.sentencesSolved ?? [],
       savedWords: parsed.savedWords ?? [],
+      srs: parsed.srs ?? {},
     }
   } catch {
     return DEFAULT_PROGRESS
@@ -39,6 +42,16 @@ export function useProgress() {
     setProgress((p) => ({
       ...p,
       wordStatus: { ...p.wordStatus, [wordId]: status },
+    }))
+  }, [])
+
+  // A flashcard review: updates the spaced-repetition schedule and the status
+  // badge together. "Remembered" keeps the existing "known" badge behaviour.
+  const reviewWord = useCallback((wordId: string, remembered: boolean) => {
+    setProgress((p) => ({
+      ...p,
+      wordStatus: { ...p.wordStatus, [wordId]: remembered ? 'known' : 'learning' },
+      srs: { ...p.srs, [wordId]: schedule(p.srs[wordId], remembered) },
     }))
   }, [])
 
@@ -82,9 +95,12 @@ export function useProgress() {
     setProgress((p) => {
       const wordStatus = { ...p.wordStatus }
       delete wordStatus[wordId]
+      const srs = { ...p.srs }
+      delete srs[wordId]
       return {
         ...p,
         wordStatus,
+        srs,
         savedWords: p.savedWords.filter((w) => w.id !== wordId),
       }
     })
@@ -97,6 +113,7 @@ export function useProgress() {
   return {
     progress,
     setWordStatus,
+    reviewWord,
     recordQuizAnswer,
     recordGrammarAnswer,
     markSentenceSolved,

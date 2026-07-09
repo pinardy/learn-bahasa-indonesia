@@ -1301,6 +1301,75 @@
   transform: scale(0.94);
 }
 
+/* ===== Spaced repetition ===== */
+.review-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  background: linear-gradient(120deg, var(--red), var(--red-dark));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow);
+  transition: transform 0.1s;
+}
+
+.review-banner:hover {
+  transform: translateY(-1px);
+}
+
+.review-banner-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.review-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.review-banner-text strong {
+  font-size: 1.05rem;
+}
+
+.review-banner-text span {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.review-banner-go {
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pill-review {
+  border-color: var(--red);
+  color: var(--red);
+  font-weight: 700;
+}
+
+.review-note {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  margin: 0 0 16px;
+}
+
+.review-empty {
+  text-align: center;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  padding: 40px 10px;
+}
+
 /* ===== Speak button ===== */
 .speak-btn {
   background: none;

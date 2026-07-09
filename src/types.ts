@@ -61,6 +61,16 @@ export interface GrammarExercise {
 
 export type WordStatus = 'new' | 'learning' | 'known'
 
+/** Spaced-repetition schedule for a single word (Leitner box system) */
+export interface SrsCard {
+  /** 1–5; higher box = longer interval between reviews */
+  box: number
+  /** local date (YYYY-MM-DD) the word is next due for review */
+  due: string
+  /** total number of times reviewed */
+  reps: number
+}
+
 export interface Progress {
   wordStatus: Record<string, WordStatus>
   quizStats: { correct: number; total: number }
@@ -68,4 +78,6 @@ export interface Progress {
   sentencesSolved: string[]
   /** Words the user saved while reading news articles */
   savedWords: Word[]
+  /** Per-word spaced-repetition schedule, keyed by word id */
+  srs: Record<string, SrsCard>
 }

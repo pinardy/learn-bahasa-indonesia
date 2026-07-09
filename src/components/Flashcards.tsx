@@ -1,25 +1,38 @@
 import { useMemo, useState } from 'react'
-import type { CategoryId, Word, WordStatus } from '../types'
+import type { CategoryId, SrsCard, Word, WordStatus } from '../types'
 import { CATEGORIES, SAVED_CATEGORY, WORDS } from '../data/vocabulary'
 import { shuffle } from '../utils'
+import { dueWords } from '../srs'
 import { SpeakButton } from './SpeakButton'
+
+type DeckFilter = CategoryId | 'all' | 'review'
 
 interface FlashcardsProps {
   wordStatus: Record<string, WordStatus>
   savedWords: Word[]
-  onSetStatus: (wordId: string, status: WordStatus) => void
+  srs: Record<string, SrsCard>
+  startInReview?: boolean
+  onReview: (wordId: string, remembered: boolean) => void
 }
 
-export function Flashcards({ wordStatus, savedWords, onSetStatus }: FlashcardsProps) {
-  const [category, setCategory] = useState<CategoryId | 'all'>('all')
+export function Flashcards({
+  wordStatus,
+  savedWords,
+  srs,
+  startInReview,
+  onReview,
+}: FlashcardsProps) {
+  const [category, setCategory] = useState<DeckFilter>(startInReview ? 'review' : 'all')
   const [deckSeed, setDeckSeed] = useState(0)
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
 
   const allWords = useMemo(() => [...WORDS, ...savedWords], [savedWords])
   const categories = savedWords.length > 0 ? [...CATEGORIES, SAVED_CATEGORY] : CATEGORIES
+  const reviewCount = useMemo(() => dueWords(allWords, srs).length, [allWords, srs])
 
   const deck = useMemo(() => {
+    if (category === 'review') return dueWords(allWords, srs)
     const pool = category === 'all' ? allWords : allWords.filter((w) => w.category === category)
     return shuffle(pool)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -27,14 +40,14 @@ export function Flashcards({ wordStatus, savedWords, onSetStatus }: FlashcardsPr
 
   const word = deck[index]
 
-  const selectCategory = (c: CategoryId | 'all') => {
+  const selectCategory = (c: DeckFilter) => {
     setCategory(c)
     setIndex(0)
     setFlipped(false)
   }
 
-  const advance = (status?: WordStatus) => {
-    if (status && word) onSetStatus(word.id, status)
+  const advance = (remembered?: boolean) => {
+    if (remembered !== undefined && word) onReview(word.id, remembered)
     setFlipped(false)
     if (index + 1 >= deck.length) {
       setDeckSeed((s) => s + 1)
@@ -44,13 +57,50 @@ export function Flashcards({ wordStatus, savedWords, onSetStatus }: FlashcardsPr
     }
   }
 
-  if (!word) return null
+  const reviewPill = reviewCount > 0 && (
+    <button
+      className={`pill pill-review ${category === 'review' ? 'pill-active' : ''}`}
+      onClick={() => selectCategory('review')}
+    >
+      ⏰ Review ({reviewCount})
+    </button>
+  )
+
+  if (!word) {
+    return (
+      <div className="flashcards">
+        <div className="category-pills">
+          {reviewPill}
+          <button
+            className={`pill ${category === 'all' ? 'pill-active' : ''}`}
+            onClick={() => selectCategory('all')}
+          >
+            All
+          </button>
+          {categories.map((c) => (
+            <button
+              key={c.id}
+              className={`pill ${category === c.id ? 'pill-active' : ''}`}
+              onClick={() => selectCategory(c.id)}
+            >
+              {c.emoji} {c.name}
+            </button>
+          ))}
+        </div>
+        <p className="review-empty">
+          🎉 No words due for review right now. Study a category above, and words you grade will
+          come back for review on a spaced schedule.
+        </p>
+      </div>
+    )
+  }
 
   const status = wordStatus[word.id] ?? 'new'
 
   return (
     <div className="flashcards">
       <div className="category-pills">
+        {reviewPill}
         <button
           className={`pill ${category === 'all' ? 'pill-active' : ''}`}
           onClick={() => selectCategory('all')}
@@ -67,6 +117,12 @@ export function Flashcards({ wordStatus, savedWords, onSetStatus }: FlashcardsPr
           </button>
         ))}
       </div>
+
+      {category === 'review' && (
+        <p className="review-note">
+          ⏰ Reviewing {deck.length} word{deck.length === 1 ? '' : 's'} due today
+        </p>
+      )}
 
       <div className="deck-position">
         Card {index + 1} of {deck.length}
@@ -112,10 +168,10 @@ export function Flashcards({ wordStatus, savedWords, onSetStatus }: FlashcardsPr
 
       {flipped ? (
         <div className="flashcard-actions">
-          <button className="btn btn-warn" onClick={() => advance('learning')}>
+          <button className="btn btn-warn" onClick={() => advance(false)}>
             Still learning
           </button>
-          <button className="btn btn-success" onClick={() => advance('known')}>
+          <button className="btn btn-success" onClick={() => advance(true)}>
             I know this ✓
           </button>
         </div>
