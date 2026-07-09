@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Word } from '../types'
 import { WORDS } from '../data/vocabulary'
-import { sample, shuffle } from '../utils'
+import { levenshtein, sample, shuffle } from '../utils'
 
 interface QuizProps {
   savedWords: Word[]
@@ -14,6 +14,8 @@ interface Question {
   options: string[]
   answer: string
 }
+
+type QuizMode = 'choice' | 'typed'
 
 const QUIZ_LENGTH = 10
 
@@ -34,21 +36,57 @@ function makeQuiz(pool: Word[]): Question[] {
   return sample(pool, QUIZ_LENGTH).map((word) => makeQuestion(word, pool))
 }
 
+function normalize(text: string): string {
+  return text.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+/** Edit distance allowed before a typed answer counts as wrong */
+function typoTolerance(answer: string): number {
+  return answer.length >= 5 ? 1 : 0
+}
+
 export function Quiz({ savedWords, onAnswer }: QuizProps) {
+  const [mode, setMode] = useState<QuizMode>('choice')
   const [questions, setQuestions] = useState<Question[]>(() =>
     makeQuiz([...WORDS, ...savedWords])
   )
   const [current, setCurrent] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
+  const [typed, setTyped] = useState('')
   const [score, setScore] = useState(0)
   const [finished, setFinished] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const question = questions[current]
+  // typed mode always tests recall: English prompt → type the Indonesian
+  const typedAnswer = question?.word.indonesian ?? ''
+
+  useEffect(() => {
+    if (mode === 'typed' && !finished && selected === null) inputRef.current?.focus()
+  }, [mode, current, finished, selected])
+
+  const restart = useCallback(() => {
+    setQuestions(makeQuiz([...WORDS, ...savedWords]))
+    setCurrent(0)
+    setSelected(null)
+    setTyped('')
+    setScore(0)
+    setFinished(false)
+  }, [savedWords])
+
+  const switchMode = (m: QuizMode) => {
+    if (m === mode) return
+    setMode(m)
+    restart()
+  }
+
+  const gradeTyped = (attempt: string) =>
+    levenshtein(normalize(attempt), normalize(typedAnswer)) <= typoTolerance(typedAnswer)
 
   const choose = (option: string) => {
     if (selected !== null) return
     setSelected(option)
-    const correct = option === question.answer
+    const correct = mode === 'choice' ? option === question.answer : gradeTyped(option)
     if (correct) setScore((s) => s + 1)
     onAnswer(correct)
   }
@@ -59,45 +97,73 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
     } else {
       setCurrent(current + 1)
       setSelected(null)
+      setTyped('')
     }
   }
 
-  const restart = useCallback(() => {
-    setQuestions(makeQuiz([...WORDS, ...savedWords]))
-    setCurrent(0)
-    setSelected(null)
-    setScore(0)
-    setFinished(false)
-  }, [savedWords])
+  const modePills = (
+    <div className="category-pills">
+      <button
+        className={`pill ${mode === 'choice' ? 'pill-active' : ''}`}
+        onClick={() => switchMode('choice')}
+      >
+        🔘 Multiple choice
+      </button>
+      <button
+        className={`pill ${mode === 'typed' ? 'pill-active' : ''}`}
+        onClick={() => switchMode('typed')}
+      >
+        ⌨️ Type the answer
+      </button>
+    </div>
+  )
 
   if (finished) {
     const pct = Math.round((score / questions.length) * 100)
     return (
-      <div className="quiz-result">
-        <span className="quiz-result-emoji">{pct >= 80 ? '🎉' : pct >= 50 ? '💪' : '📚'}</span>
-        <h2>
-          {score} / {questions.length}
-        </h2>
-        <p>
-          {pct >= 80
-            ? 'Luar biasa! (Amazing!)'
-            : pct >= 50
-              ? 'Bagus! Keep practicing!'
-              : 'Keep going — review the flashcards and try again!'}
-        </p>
-        <button className="btn btn-primary" onClick={restart}>
-          Try another quiz
-        </button>
+      <div className="quiz">
+        {modePills}
+        <div className="quiz-result">
+          <span className="quiz-result-emoji">{pct >= 80 ? '🎉' : pct >= 50 ? '💪' : '📚'}</span>
+          <h2>
+            {score} / {questions.length}
+          </h2>
+          <p>
+            {pct >= 80
+              ? 'Luar biasa! (Amazing!)'
+              : pct >= 50
+                ? 'Bagus! Keep practicing!'
+                : 'Keep going — review the flashcards and try again!'}
+          </p>
+          <button className="btn btn-primary" onClick={restart}>
+            Try another quiz
+          </button>
+        </div>
       </div>
     )
   }
 
-  const prompt = question.direction === 'id-en' ? question.word.indonesian : question.word.english
-  const promptLang = question.direction === 'id-en' ? 'Bahasa Indonesia' : 'English'
-  const targetLang = question.direction === 'id-en' ? 'English' : 'Bahasa Indonesia'
+  const answered = selected !== null
+  const isCorrect = answered
+    ? mode === 'choice'
+      ? selected === question.answer
+      : gradeTyped(selected)
+    : false
+  const isTypo =
+    answered && mode === 'typed' && isCorrect && normalize(selected) !== normalize(typedAnswer)
+
+  const prompt =
+    mode === 'typed' || question.direction === 'en-id'
+      ? question.word.english
+      : question.word.indonesian
+  const promptLang = mode === 'typed' || question.direction === 'en-id' ? 'English' : 'Bahasa Indonesia'
+  const targetLang = promptLang === 'English' ? 'Bahasa Indonesia' : 'English'
+  const correctAnswer = mode === 'typed' ? typedAnswer : question.answer
 
   return (
-    <div className={`quiz ${selected !== null ? 'quiz-answered' : ''}`}>
+    <div className={`quiz ${answered ? 'quiz-answered' : ''}`}>
+      {modePills}
+
       <div className="quiz-progress">
         <div className="quiz-progress-track">
           <div
@@ -117,36 +183,63 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
         <h2>{prompt}</h2>
       </div>
 
-      <div className="quiz-options">
-        {question.options.map((option) => {
-          let cls = 'quiz-option'
-          if (selected !== null) {
-            if (option === question.answer) cls += ' quiz-option-correct'
-            else if (option === selected) cls += ' quiz-option-wrong'
-            else cls += ' quiz-option-dim'
-          }
-          return (
-            <button key={option} className={cls} onClick={() => choose(option)}>
-              {option}
-            </button>
-          )
-        })}
-      </div>
-
-      {selected !== null && (
-        <div
-          className={`answer-bar ${
-            selected === question.answer ? 'answer-bar-correct' : 'answer-bar-wrong'
-          }`}
+      {mode === 'choice' ? (
+        <div className="quiz-options">
+          {question.options.map((option) => {
+            let cls = 'quiz-option'
+            if (answered) {
+              if (option === question.answer) cls += ' quiz-option-correct'
+              else if (option === selected) cls += ' quiz-option-wrong'
+              else cls += ' quiz-option-dim'
+            }
+            return (
+              <button key={option} className={cls} onClick={() => choose(option)}>
+                {option}
+              </button>
+            )
+          })}
+        </div>
+      ) : (
+        <form
+          className="typed-form"
+          onSubmit={(e) => {
+            e.preventDefault()
+            choose(typed)
+          }}
         >
+          <input
+            ref={inputRef}
+            className={`typed-input ${
+              answered ? (isCorrect ? 'typed-input-correct' : 'typed-input-wrong') : ''
+            }`}
+            type="text"
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            placeholder="Type the Indonesian…"
+            disabled={answered}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+          />
+          {!answered && (
+            <button className="btn btn-primary" type="submit">
+              Check
+            </button>
+          )}
+        </form>
+      )}
+
+      {answered && (
+        <div className={`answer-bar ${isCorrect ? 'answer-bar-correct' : 'answer-bar-wrong'}`}>
           <div className="answer-bar-inner">
             <div className="answer-bar-text">
-              {selected === question.answer ? (
-                <strong className="text-success">Benar! (Correct!)</strong>
-              ) : (
-                <strong className="text-error">
-                  Salah — the answer is “{question.answer}”
+              {isCorrect ? (
+                <strong className="text-success">
+                  {isTypo ? `Benar! Close enough — it's spelled “${correctAnswer}”` : 'Benar! (Correct!)'}
                 </strong>
+              ) : (
+                <strong className="text-error">Salah — the answer is “{correctAnswer}”</strong>
               )}
               {question.word.example && (
                 <p>
@@ -154,7 +247,7 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
                 </p>
               )}
             </div>
-            <button className="btn btn-primary" onClick={next}>
+            <button className="btn btn-primary" onClick={next} autoFocus={mode === 'typed'}>
               {current + 1 >= questions.length ? 'See results' : 'Next →'}
             </button>
           </div>
