@@ -71,7 +71,7 @@ export function Grammar({ onAnswer }: GrammarProps) {
   const [before, after] = exercise.sentence.split('___')
 
   return (
-    <div className="quiz grammar">
+    <div className={`quiz grammar ${answered ? 'quiz-answered' : ''}`}>
       <div className="quiz-progress">
         <div className="quiz-progress-track">
           <div
@@ -113,18 +113,20 @@ export function Grammar({ onAnswer }: GrammarProps) {
       </div>
 
       {answered && (
-        <div className="quiz-feedback">
-          <p>
-            {isCorrect ? (
-              <strong className="text-success">Benar! (Correct!)</strong>
-            ) : (
-              <strong className="text-error">Salah — the answer is “{exercise.answer}”</strong>
-            )}
-          </p>
-          <div className="grammar-explanation">{exercise.explanation}</div>
-          <button className="btn btn-primary" onClick={next}>
-            {current + 1 >= exercises.length ? 'See results' : 'Next exercise →'}
-          </button>
+        <div className={`answer-bar ${isCorrect ? 'answer-bar-correct' : 'answer-bar-wrong'}`}>
+          <div className="answer-bar-inner">
+            <div className="answer-bar-text">
+              {isCorrect ? (
+                <strong className="text-success">Benar! (Correct!)</strong>
+              ) : (
+                <strong className="text-error">Salah — the answer is “{exercise.answer}”</strong>
+              )}
+              <p>{exercise.explanation}</p>
+            </div>
+            <button className="btn btn-primary" onClick={next}>
+              {current + 1 >= exercises.length ? 'See results' : 'Next →'}
+            </button>
+          </div>
         </div>
       )}
     </div>

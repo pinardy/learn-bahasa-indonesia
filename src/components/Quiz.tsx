@@ -91,7 +91,7 @@ export function Quiz({ onAnswer }: QuizProps) {
   const targetLang = question.direction === 'id-en' ? 'English' : 'Bahasa Indonesia'
 
   return (
-    <div className="quiz">
+    <div className={`quiz ${selected !== null ? 'quiz-answered' : ''}`}>
       <div className="quiz-progress">
         <div className="quiz-progress-track">
           <div
@@ -128,24 +128,30 @@ export function Quiz({ onAnswer }: QuizProps) {
       </div>
 
       {selected !== null && (
-        <div className="quiz-feedback">
-          <p>
-            {selected === question.answer ? (
-              <strong className="text-success">Benar! (Correct!)</strong>
-            ) : (
-              <strong className="text-error">
-                Salah — the answer is “{question.answer}”
-              </strong>
-            )}
-          </p>
-          {question.word.example && (
-            <p className="quiz-example">
-              <em>{question.word.example}</em> — {question.word.exampleTranslation}
-            </p>
-          )}
-          <button className="btn btn-primary" onClick={next}>
-            {current + 1 >= questions.length ? 'See results' : 'Next question →'}
-          </button>
+        <div
+          className={`answer-bar ${
+            selected === question.answer ? 'answer-bar-correct' : 'answer-bar-wrong'
+          }`}
+        >
+          <div className="answer-bar-inner">
+            <div className="answer-bar-text">
+              {selected === question.answer ? (
+                <strong className="text-success">Benar! (Correct!)</strong>
+              ) : (
+                <strong className="text-error">
+                  Salah — the answer is “{question.answer}”
+                </strong>
+              )}
+              {question.word.example && (
+                <p>
+                  <em>{question.word.example}</em> — {question.word.exampleTranslation}
+                </p>
+              )}
+            </div>
+            <button className="btn btn-primary" onClick={next}>
+              {current + 1 >= questions.length ? 'See results' : 'Next →'}
+            </button>
+          </div>
         </div>
       )}
     </div>
