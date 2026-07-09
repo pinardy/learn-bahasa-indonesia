@@ -6,23 +6,31 @@ import { Quiz } from './components/Quiz'
 import { SentenceBuilder } from './components/SentenceBuilder'
 import { Vocabulary } from './components/Vocabulary'
 import { News } from './components/News'
+import { Grammar } from './components/Grammar'
 import './App.css'
 
-type View = 'home' | 'flashcards' | 'quiz' | 'sentences' | 'vocabulary' | 'news'
+type View = 'home' | 'flashcards' | 'quiz' | 'sentences' | 'grammar' | 'vocabulary' | 'news'
 
 const NAV_ITEMS: { view: View; label: string; emoji: string }[] = [
   { view: 'home', label: 'Home', emoji: '🏠' },
   { view: 'flashcards', label: 'Flashcards', emoji: '🃏' },
   { view: 'quiz', label: 'Quiz', emoji: '❓' },
   { view: 'sentences', label: 'Sentences', emoji: '🧩' },
+  { view: 'grammar', label: 'Grammar', emoji: '📝' },
   { view: 'vocabulary', label: 'Vocabulary', emoji: '📖' },
   { view: 'news', label: 'News', emoji: '📰' },
 ]
 
 export default function App() {
   const [view, setView] = useState<View>('home')
-  const { progress, setWordStatus, recordQuizAnswer, markSentenceSolved, resetProgress } =
-    useProgress()
+  const {
+    progress,
+    setWordStatus,
+    recordQuizAnswer,
+    recordGrammarAnswer,
+    markSentenceSolved,
+    resetProgress,
+  } = useProgress()
 
   return (
     <div className="app">
@@ -55,6 +63,7 @@ export default function App() {
         {view === 'sentences' && (
           <SentenceBuilder solved={progress.sentencesSolved} onSolved={markSentenceSolved} />
         )}
+        {view === 'grammar' && <Grammar onAnswer={recordGrammarAnswer} />}
         {view === 'vocabulary' && <Vocabulary wordStatus={progress.wordStatus} />}
         {view === 'news' && <News />}
       </main>

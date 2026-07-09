@@ -13,11 +13,15 @@ export function Home({ progress, onNavigate, onReset }: HomeProps) {
   const learningCount = Object.values(progress.wordStatus).filter((s) => s === 'learning').length
   const { correct, total } = progress.quizStats
   const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0
+  const grammar = progress.grammarStats
+  const grammarAccuracy =
+    grammar.total > 0 ? Math.round((grammar.correct / grammar.total) * 100) : 0
 
   const activities = [
     { view: 'flashcards', emoji: '🃏', title: 'Flashcards', desc: 'Flip cards to memorize new words' },
     { view: 'quiz', emoji: '❓', title: 'Quiz', desc: 'Test yourself with multiple choice' },
     { view: 'sentences', emoji: '🧩', title: 'Sentence Builder', desc: 'Arrange words into sentences' },
+    { view: 'grammar', emoji: '📝', title: 'Grammar', desc: 'Fill in the blank, learn the rules' },
     { view: 'vocabulary', emoji: '📖', title: 'Vocabulary', desc: 'Browse and search all words' },
     { view: 'news', emoji: '📰', title: 'News', desc: 'Read real Indonesian news bilingually' },
   ]
@@ -45,6 +49,10 @@ export function Home({ progress, onNavigate, onReset }: HomeProps) {
         <div className="stat-card">
           <span className="stat-value">{total > 0 ? `${accuracy}%` : '—'}</span>
           <span className="stat-label">quiz accuracy</span>
+        </div>
+        <div className="stat-card">
+          <span className="stat-value">{grammar.total > 0 ? `${grammarAccuracy}%` : '—'}</span>
+          <span className="stat-label">grammar accuracy</span>
         </div>
         <div className="stat-card">
           <span className="stat-value">
@@ -79,7 +87,7 @@ export function Home({ progress, onNavigate, onReset }: HomeProps) {
         ))}
       </div>
 
-      {(knownCount > 0 || total > 0 || progress.sentencesSolved.length > 0) && (
+      {(knownCount > 0 || total > 0 || grammar.total > 0 || progress.sentencesSolved.length > 0) && (
         <button
           className="reset-btn"
           onClick={() => {

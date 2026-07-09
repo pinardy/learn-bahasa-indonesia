@@ -41,10 +41,23 @@ export interface NewsArticle {
   sampleEnglish?: { title: string; snippet: string }
 }
 
+export interface GrammarExercise {
+  id: string
+  topic: string
+  /** Indonesian sentence containing exactly one ___ blank */
+  sentence: string
+  answer: string
+  distractors: string[]
+  /** English meaning of the completed sentence — disambiguates the answer */
+  translation: string
+  explanation: string
+}
+
 export type WordStatus = 'new' | 'learning' | 'known'
 
 export interface Progress {
   wordStatus: Record<string, WordStatus>
   quizStats: { correct: number; total: number }
+  grammarStats: { correct: number; total: number }
   sentencesSolved: string[]
 }

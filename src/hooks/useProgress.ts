@@ -6,6 +6,7 @@ const STORAGE_KEY = 'bahasa-learner-progress'
 const DEFAULT_PROGRESS: Progress = {
   wordStatus: {},
   quizStats: { correct: 0, total: 0 },
+  grammarStats: { correct: 0, total: 0 },
   sentencesSolved: [],
 }
 
@@ -17,6 +18,7 @@ function loadProgress(): Progress {
     return {
       wordStatus: parsed.wordStatus ?? {},
       quizStats: parsed.quizStats ?? { correct: 0, total: 0 },
+      grammarStats: parsed.grammarStats ?? { correct: 0, total: 0 },
       sentencesSolved: parsed.sentencesSolved ?? [],
     }
   } catch {
@@ -48,6 +50,16 @@ export function useProgress() {
     }))
   }, [])
 
+  const recordGrammarAnswer = useCallback((correct: boolean) => {
+    setProgress((p) => ({
+      ...p,
+      grammarStats: {
+        correct: p.grammarStats.correct + (correct ? 1 : 0),
+        total: p.grammarStats.total + 1,
+      },
+    }))
+  }, [])
+
   const markSentenceSolved = useCallback((sentenceId: string) => {
     setProgress((p) =>
       p.sentencesSolved.includes(sentenceId)
@@ -60,5 +72,12 @@ export function useProgress() {
     setProgress(DEFAULT_PROGRESS)
   }, [])
 
-  return { progress, setWordStatus, recordQuizAnswer, markSentenceSolved, resetProgress }
+  return {
+    progress,
+    setWordStatus,
+    recordQuizAnswer,
+    recordGrammarAnswer,
+    markSentenceSolved,
+    resetProgress,
+  }
 }
