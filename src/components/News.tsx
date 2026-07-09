@@ -32,9 +32,12 @@ function formatDate(iso?: string): string | null {
   })
 }
 
+const PAGE_SIZE = 10
+
 export function News() {
   const [source, setSource] = useState<NewsSource>(NEWS_SOURCES[0])
   const [articles, setArticles] = useState<NewsArticle[]>([])
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [loading, setLoading] = useState(true)
   const [offline, setOffline] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -46,6 +49,7 @@ export function News() {
     setOffline(false)
     setExpandedId(null)
     setLookup(null)
+    setVisibleCount(PAGE_SIZE)
     try {
       const fetched = await fetchNews(src)
       if (fetched.length === 0) throw new Error('No articles')
@@ -160,7 +164,7 @@ export function News() {
         </div>
       ) : (
         <ul className="news-list">
-          {articles.map((article) => {
+          {articles.slice(0, visibleCount).map((article) => {
             const expanded = expandedId === article.id
             const tx = translations[article.id]
             const activeLookup = lookup?.articleId === article.id ? lookup : null
@@ -228,6 +232,15 @@ export function News() {
             )
           })}
         </ul>
+      )}
+
+      {!loading && articles.length > visibleCount && (
+        <button
+          className="btn btn-ghost show-more"
+          onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+        >
+          Show more articles ({articles.length - visibleCount} more)
+        </button>
       )}
     </div>
   )

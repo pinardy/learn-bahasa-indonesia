@@ -747,6 +747,11 @@
   margin-top: 4px;
 }
 
+.show-more {
+  display: block;
+  margin: 18px auto 0;
+}
+
 .back-to-top {
   position: fixed;
   right: 24px;

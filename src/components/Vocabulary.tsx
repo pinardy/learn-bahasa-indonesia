@@ -6,10 +6,17 @@ interface VocabularyProps {
   wordStatus: Record<string, WordStatus>
 }
 
+const PAGE_SIZE = 30
+
 export function Vocabulary({ wordStatus }: VocabularyProps) {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState<CategoryId | 'all'>('all')
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [showTopBtn, setShowTopBtn] = useState(false)
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE)
+  }, [search, category])
 
   useEffect(() => {
     const onScroll = () => setShowTopBtn(window.scrollY > 300)
@@ -58,7 +65,7 @@ export function Vocabulary({ wordStatus }: VocabularyProps) {
         <p className="vocab-empty">No words match “{search}”.</p>
       ) : (
         <ul className="vocab-list">
-          {filtered.map((w) => {
+          {filtered.slice(0, visibleCount).map((w) => {
             const status = wordStatus[w.id] ?? 'new'
             return (
               <li key={w.id} className="vocab-item">
@@ -78,6 +85,15 @@ export function Vocabulary({ wordStatus }: VocabularyProps) {
             )
           })}
         </ul>
+      )}
+
+      {filtered.length > visibleCount && (
+        <button
+          className="btn btn-ghost show-more"
+          onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+        >
+          Show more ({filtered.length - visibleCount} remaining)
+        </button>
       )}
 
       {showTopBtn && (

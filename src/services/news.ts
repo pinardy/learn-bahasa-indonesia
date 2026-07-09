@@ -30,7 +30,7 @@ interface ApiResponse {
   data?: ApiArticle[]
 }
 
-const MAX_ARTICLES = 20
+const MAX_ARTICLES = 50
 
 export async function fetchNews(source: NewsSource): Promise<NewsArticle[]> {
   const res = await fetch(`${API_BASE}/${source.path}`)
