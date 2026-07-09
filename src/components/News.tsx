@@ -19,6 +19,25 @@ function cleanWord(token: string): string {
   return token.replace(/[.,!?;:"'()[\]«»„“”%–—]/g, '')
 }
 
+function NewsThumb({ src }: { src: string }) {
+  const [loaded, setLoaded] = useState(false)
+  return (
+    <span className="news-thumb-wrap">
+      <img
+        className={`news-thumb ${loaded ? 'news-thumb-loaded' : ''}`}
+        src={src}
+        alt=""
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        ref={(img) => {
+          // cached images can finish before React attaches onLoad
+          if (img?.complete && img.naturalWidth > 0) setLoaded(true)
+        }}
+      />
+    </span>
+  )
+}
+
 function formatDate(iso?: string): string | null {
   if (!iso) return null
   const date = new Date(iso)
@@ -184,9 +203,7 @@ export function News() {
             return (
               <li key={article.id} className={`news-item ${expanded ? 'news-item-expanded' : ''}`}>
                 <button className="news-item-head" onClick={() => toggleExpand(article)}>
-                  {article.image && (
-                    <img className="news-thumb" src={article.image} alt="" loading="lazy" />
-                  )}
+                  {article.image && <NewsThumb src={article.image} />}
                   <span className="news-head-text">
                     <span className="news-title">{article.title}</span>
                     <span className="news-meta">
