@@ -52,13 +52,14 @@
 .nav-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   white-space: nowrap;
   flex-shrink: 0;
   border: 1px solid transparent;
   background: none;
   border-radius: 999px;
-  padding: 8px 14px;
+  padding: 8px 11px;
+  font-size: 0.95rem;
   color: var(--ink-soft);
   font-weight: 600;
   transition: background 0.15s, color 0.15s;
@@ -1209,13 +1210,13 @@
   }
 
   .nav-btn {
-    padding: 8px 10px;
-    font-size: 0.88rem;
+    padding: 8px 9px;
+    font-size: 0.86rem;
     gap: 4px;
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .nav-label {
     display: none;
   }
