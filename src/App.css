@@ -1301,6 +1301,27 @@
   transform: scale(0.94);
 }
 
+/* ===== Category dropdown ===== */
+.filter-select {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--red);
+}
+
 /* ===== Spaced repetition ===== */
 .review-banner {
   display: flex;

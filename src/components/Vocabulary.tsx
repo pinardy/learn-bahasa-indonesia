@@ -29,6 +29,11 @@ export function Vocabulary({ wordStatus, savedWords, onRemoveSaved }: Vocabulary
 
   const allWords = useMemo(() => [...WORDS, ...savedWords], [savedWords])
   const categories = savedWords.length > 0 ? [...CATEGORIES, SAVED_CATEGORY] : CATEGORIES
+  const counts = useMemo(() => {
+    const m: Record<string, number> = {}
+    for (const w of allWords) m[w.category] = (m[w.category] ?? 0) + 1
+    return m
+  }, [allWords])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -49,23 +54,19 @@ export function Vocabulary({ wordStatus, savedWords, onRemoveSaved }: Vocabulary
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      <div className="category-pills">
-        <button
-          className={`pill ${category === 'all' ? 'pill-active' : ''}`}
-          onClick={() => setCategory('all')}
-        >
-          All ({allWords.length})
-        </button>
+      <select
+        className="filter-select"
+        value={category}
+        onChange={(e) => setCategory(e.target.value as CategoryId | 'all')}
+        aria-label="Filter by category"
+      >
+        <option value="all">All words ({allWords.length})</option>
         {categories.map((c) => (
-          <button
-            key={c.id}
-            className={`pill ${category === c.id ? 'pill-active' : ''}`}
-            onClick={() => setCategory(c.id)}
-          >
-            {c.emoji} {c.name}
-          </button>
+          <option key={c.id} value={c.id}>
+            {c.emoji} {c.name} ({counts[c.id] ?? 0})
+          </option>
         ))}
-      </div>
+      </select>
 
       {filtered.length === 0 ? (
         <p className="vocab-empty">No words match “{search}”.</p>

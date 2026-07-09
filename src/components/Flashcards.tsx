@@ -57,39 +57,30 @@ export function Flashcards({
     }
   }
 
-  const reviewPill = reviewCount > 0 && (
-    <button
-      className={`pill pill-review ${category === 'review' ? 'pill-active' : ''}`}
-      onClick={() => selectCategory('review')}
+  const categorySelect = (
+    <select
+      className="filter-select"
+      value={category}
+      onChange={(e) => selectCategory(e.target.value as DeckFilter)}
+      aria-label="Choose a deck"
     >
-      ⏰ Review ({reviewCount})
-    </button>
+      {reviewCount > 0 && <option value="review">⏰ Review ({reviewCount} due)</option>}
+      <option value="all">All words</option>
+      {categories.map((c) => (
+        <option key={c.id} value={c.id}>
+          {c.emoji} {c.name}
+        </option>
+      ))}
+    </select>
   )
 
   if (!word) {
     return (
       <div className="flashcards">
-        <div className="category-pills">
-          {reviewPill}
-          <button
-            className={`pill ${category === 'all' ? 'pill-active' : ''}`}
-            onClick={() => selectCategory('all')}
-          >
-            All
-          </button>
-          {categories.map((c) => (
-            <button
-              key={c.id}
-              className={`pill ${category === c.id ? 'pill-active' : ''}`}
-              onClick={() => selectCategory(c.id)}
-            >
-              {c.emoji} {c.name}
-            </button>
-          ))}
-        </div>
+        {categorySelect}
         <p className="review-empty">
-          🎉 No words due for review right now. Study a category above, and words you grade will
-          come back for review on a spaced schedule.
+          🎉 No words due for review right now. Choose a deck above, and words you grade will come
+          back for review on a spaced schedule.
         </p>
       </div>
     )
@@ -99,24 +90,7 @@ export function Flashcards({
 
   return (
     <div className="flashcards">
-      <div className="category-pills">
-        {reviewPill}
-        <button
-          className={`pill ${category === 'all' ? 'pill-active' : ''}`}
-          onClick={() => selectCategory('all')}
-        >
-          All
-        </button>
-        {categories.map((c) => (
-          <button
-            key={c.id}
-            className={`pill ${category === c.id ? 'pill-active' : ''}`}
-            onClick={() => selectCategory(c.id)}
-          >
-            {c.emoji} {c.name}
-          </button>
-        ))}
-      </div>
+      {categorySelect}
 
       {category === 'review' && (
         <p className="review-note">
