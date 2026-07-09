@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { CategoryId, WordStatus } from '../types'
 import { CATEGORIES, WORDS } from '../data/vocabulary'
 
@@ -9,6 +9,13 @@ interface VocabularyProps {
 export function Vocabulary({ wordStatus }: VocabularyProps) {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState<CategoryId | 'all'>('all')
+  const [showTopBtn, setShowTopBtn] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setShowTopBtn(window.scrollY > 300)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -71,6 +78,17 @@ export function Vocabulary({ wordStatus }: VocabularyProps) {
             )
           })}
         </ul>
+      )}
+
+      {showTopBtn && (
+        <button
+          className="back-to-top"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Back to top"
+          title="Back to top"
+        >
+          ↑
+        </button>
       )}
     </div>
   )
