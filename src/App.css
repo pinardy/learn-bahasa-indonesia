@@ -1,8 +1,14 @@
 /* ===== Layout ===== */
 .app {
-  max-width: 860px;
+  max-width: 1080px;
   margin: 0 auto;
   padding: 0 20px 60px;
+}
+
+/* content stays a comfortable reading width; the header/nav may use the full column */
+.app-main {
+  max-width: 860px;
+  margin: 0 auto;
 }
 
 .app-header {
@@ -578,6 +584,12 @@
 .quiz-result p {
   color: var(--ink-soft);
   margin-bottom: 24px;
+}
+
+.trainer-prompt {
+  font-size: 3rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 .typed-form {
@@ -1240,7 +1252,7 @@
 }
 
 /* ===== Responsive ===== */
-@media (max-width: 940px) {
+@media (max-width: 1000px) {
   .app-nav {
     gap: 4px;
   }
@@ -1252,7 +1264,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .nav-label {
     display: none;
   }

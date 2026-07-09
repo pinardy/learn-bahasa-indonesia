@@ -7,9 +7,18 @@ import { SentenceBuilder } from './components/SentenceBuilder'
 import { Vocabulary } from './components/Vocabulary'
 import { News } from './components/News'
 import { Grammar } from './components/Grammar'
+import { NumbersTime } from './components/NumbersTime'
 import './App.css'
 
-type View = 'home' | 'flashcards' | 'quiz' | 'sentences' | 'grammar' | 'vocabulary' | 'news'
+type View =
+  | 'home'
+  | 'flashcards'
+  | 'quiz'
+  | 'sentences'
+  | 'grammar'
+  | 'numbers'
+  | 'vocabulary'
+  | 'news'
 
 const NAV_ITEMS: { view: View; label: string; emoji: string }[] = [
   { view: 'home', label: 'Home', emoji: '🏠' },
@@ -17,6 +26,7 @@ const NAV_ITEMS: { view: View; label: string; emoji: string }[] = [
   { view: 'quiz', label: 'Quiz', emoji: '❓' },
   { view: 'sentences', label: 'Sentences', emoji: '🧩' },
   { view: 'grammar', label: 'Grammar', emoji: '📝' },
+  { view: 'numbers', label: 'Numbers', emoji: '🔢' },
   { view: 'vocabulary', label: 'Vocabulary', emoji: '📖' },
   { view: 'news', label: 'News', emoji: '📰' },
 ]
@@ -86,6 +96,7 @@ export default function App() {
           <SentenceBuilder solved={progress.sentencesSolved} onSolved={markSentenceSolved} />
         )}
         {view === 'grammar' && <Grammar onAnswer={recordGrammarAnswer} />}
+        {view === 'numbers' && <NumbersTime />}
         {view === 'vocabulary' && (
           <Vocabulary
             wordStatus={progress.wordStatus}

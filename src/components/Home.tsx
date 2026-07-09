@@ -22,6 +22,7 @@ export function Home({ progress, onNavigate, onReset }: HomeProps) {
     { view: 'quiz', emoji: '❓', title: 'Quiz', desc: 'Test yourself with multiple choice' },
     { view: 'sentences', emoji: '🧩', title: 'Sentence Builder', desc: 'Arrange words into sentences' },
     { view: 'grammar', emoji: '📝', title: 'Grammar', desc: 'Fill in the blank, learn the rules' },
+    { view: 'numbers', emoji: '🔢', title: 'Numbers & Time', desc: 'Practice numbers and telling time' },
     { view: 'vocabulary', emoji: '📖', title: 'Vocabulary', desc: 'Browse and search all words' },
     { view: 'news', emoji: '📰', title: 'News', desc: 'Read real Indonesian news bilingually' },
   ]
