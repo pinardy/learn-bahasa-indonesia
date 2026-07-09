@@ -6,6 +6,19 @@ import { WORDS } from '../data/vocabulary'
 
 const LOOKUP_FAILED = '(translation unavailable)'
 
+// High-frequency Indonesian function/grammar words — the "glue" that fills any
+// text and that the Grammar tab teaches (yang, di/ke/dari, tidak, sudah/akan…).
+// Counted toward readability so the score reflects real text coverage, not just
+// content words from the flashcard list.
+const COMMON_WORDS = new Set([
+  'yang', 'di', 'ke', 'dari', 'dan', 'atau', 'ini', 'itu', 'untuk', 'dengan',
+  'pada', 'dalam', 'adalah', 'akan', 'sudah', 'telah', 'sedang', 'masih', 'tidak',
+  'bukan', 'belum', 'juga', 'saja', 'hanya', 'sangat', 'lebih', 'paling', 'karena',
+  'jika', 'kalau', 'tetapi', 'tapi', 'namun', 'saat', 'ketika', 'setelah', 'sebelum',
+  'oleh', 'para', 'sebagai', 'agar', 'bahwa', 'ada', 'ia', 'nya', 'seorang', 'sebuah',
+  'banyak', 'semua', 'bisa', 'dapat', 'harus', 'ingin', 'menjadi', 'tersebut', 'lewat',
+])
+
 interface Translation {
   status: 'loading' | 'done' | 'error'
   title?: string
@@ -197,6 +210,20 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
     })
   }
 
+  // Share of an article's words that are in your vocabulary (known + learning +
+  // saved), as a rough readability estimate. Consistent with the word highlighting.
+  // Returns null until you have some vocabulary, so it isn't 0% for everyone.
+  const readabilityFor = (article: NewsArticle): number | null => {
+    if (statusByWord.size === 0) return null
+    const tokens = `${article.title} ${article.snippet}`
+      .split(/\s+/)
+      .map((t) => cleanWord(t).toLowerCase())
+      .filter((t) => /[a-z]/.test(t))
+    if (tokens.length === 0) return null
+    const familiar = tokens.filter((t) => statusByWord.has(t) || COMMON_WORDS.has(t)).length
+    return Math.round((familiar / tokens.length) * 100)
+  }
+
   const renderTappableText = (article: NewsArticle, text: string) =>
     text.split(/(\s+)/).map((token, i) => {
       if (!/\S/.test(token)) return token
@@ -233,7 +260,8 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
         💡 Read the Indonesian first, tap any word for its meaning, then reveal the English
         translation to check yourself. Words are tinted by your progress:{' '}
         <span className="news-word-known tip-chip">known</span>{' '}
-        <span className="news-word-learning tip-chip">learning</span>
+        <span className="news-word-learning tip-chip">learning</span>. Each article shows how
+        familiar its words are to you — a higher % is easier to read.
       </p>
 
       <div className="news-toolbar">
@@ -269,6 +297,10 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
             const expanded = expandedId === article.id
             const tx = translations[article.id]
             const activeLookup = lookup?.articleId === article.id ? lookup : null
+            const score = readabilityFor(article)
+            // real news is dense, so a learner's coverage sits low; calibrate the
+            // colour scale to that range rather than to an idealised 60/30 split
+            const band = score === null ? '' : score >= 45 ? 'high' : score >= 20 ? 'mid' : 'low'
             return (
               <li key={article.id} className={`news-item ${expanded ? 'news-item-expanded' : ''}`}>
                 <button className="news-item-head" onClick={() => toggleExpand(article)}>
@@ -276,6 +308,14 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
                   <span className="news-head-text">
                     <span className="news-title">{article.title}</span>
                     <span className="news-meta">
+                      {score !== null && (
+                        <span
+                          className={`news-score news-score-${band}`}
+                          title="Share of this article's words that are in your vocabulary"
+                        >
+                          📊 {score}% familiar
+                        </span>
+                      )}
                       {formatDate(article.date) ?? (article.sampleEnglish ? 'Practice article' : '')}
                       <span className="news-expand-hint">{expanded ? '▲ close' : '▼ read'}</span>
                     </span>

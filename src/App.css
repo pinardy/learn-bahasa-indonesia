@@ -1108,6 +1108,28 @@
   font-weight: 700;
 }
 
+.news-score {
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+.news-score-high {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.news-score-mid {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.news-score-low {
+  background: var(--border);
+  color: var(--ink-soft);
+}
+
 .news-body {
   padding: 0 16px 16px;
   border-top: 1px dashed var(--border);
