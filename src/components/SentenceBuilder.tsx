@@ -65,19 +65,35 @@ export function SentenceBuilder({ solved, onSolved }: SentenceBuilderProps) {
 
   return (
     <div className="sentence-builder">
-      <div className="sentence-nav">
-        {SENTENCES.map((s, i) => (
-          <button
-            key={s.id}
-            className={`sentence-dot ${i === sentenceIndex ? 'sentence-dot-active' : ''} ${
-              solved.includes(s.id) ? 'sentence-dot-solved' : ''
-            }`}
-            onClick={() => goTo(i)}
-            title={`Sentence ${i + 1}${solved.includes(s.id) ? ' (solved)' : ''}`}
-          >
-            {solved.includes(s.id) ? '✓' : i + 1}
-          </button>
-        ))}
+      <div className="sentence-levels">
+        {Array.from(new Set(SENTENCES.map((s) => s.level))).map((level) => {
+          const entries = SENTENCES.map((s, i) => ({ s, i })).filter(({ s }) => s.level === level)
+          const solvedCount = entries.filter(({ s }) => solved.includes(s.id)).length
+          return (
+            <div key={level} className="sentence-level-row">
+              <span className="sentence-level-label">
+                Level {level}
+                <span className="sentence-level-count">
+                  {solvedCount}/{entries.length}
+                </span>
+              </span>
+              <div className="sentence-nav">
+                {entries.map(({ s, i }, pos) => (
+                  <button
+                    key={s.id}
+                    className={`sentence-dot ${i === sentenceIndex ? 'sentence-dot-active' : ''} ${
+                      solved.includes(s.id) ? 'sentence-dot-solved' : ''
+                    }`}
+                    onClick={() => goTo(i)}
+                    title={`Level ${level}, sentence ${pos + 1}${solved.includes(s.id) ? ' (solved)' : ''}`}
+                  >
+                    {solved.includes(s.id) ? '✓' : pos + 1}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       <div className="sentence-prompt">

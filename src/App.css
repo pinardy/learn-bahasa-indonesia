@@ -521,12 +521,42 @@
   margin: 0 auto;
 }
 
+.sentence-levels {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.sentence-level-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sentence-level-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  min-width: 92px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sentence-level-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--green);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .sentence-nav {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 24px;
 }
 
 .sentence-dot {

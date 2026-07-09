@@ -27,6 +27,7 @@ export interface Sentence {
   id: string
   indonesian: string
   english: string
+  level: number
 }
 
 export interface NewsArticle {
