@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { Progress, WordStatus } from '../types'
+import type { Progress, Word, WordStatus } from '../types'
 
 const STORAGE_KEY = 'bahasa-learner-progress'
 
@@ -8,6 +8,7 @@ const DEFAULT_PROGRESS: Progress = {
   quizStats: { correct: 0, total: 0 },
   grammarStats: { correct: 0, total: 0 },
   sentencesSolved: [],
+  savedWords: [],
 }
 
 function loadProgress(): Progress {
@@ -20,6 +21,7 @@ function loadProgress(): Progress {
       quizStats: parsed.quizStats ?? { correct: 0, total: 0 },
       grammarStats: parsed.grammarStats ?? { correct: 0, total: 0 },
       sentencesSolved: parsed.sentencesSolved ?? [],
+      savedWords: parsed.savedWords ?? [],
     }
   } catch {
     return DEFAULT_PROGRESS
@@ -68,6 +70,26 @@ export function useProgress() {
     )
   }, [])
 
+  const saveWord = useCallback((word: Word) => {
+    setProgress((p) =>
+      p.savedWords.some((w) => w.indonesian.toLowerCase() === word.indonesian.toLowerCase())
+        ? p
+        : { ...p, savedWords: [...p.savedWords, word] }
+    )
+  }, [])
+
+  const removeSavedWord = useCallback((wordId: string) => {
+    setProgress((p) => {
+      const wordStatus = { ...p.wordStatus }
+      delete wordStatus[wordId]
+      return {
+        ...p,
+        wordStatus,
+        savedWords: p.savedWords.filter((w) => w.id !== wordId),
+      }
+    })
+  }, [])
+
   const resetProgress = useCallback(() => {
     setProgress(DEFAULT_PROGRESS)
   }, [])
@@ -78,6 +100,8 @@ export function useProgress() {
     recordQuizAnswer,
     recordGrammarAnswer,
     markSentenceSolved,
+    saveWord,
+    removeSavedWord,
     resetProgress,
   }
 }

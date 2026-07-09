@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { CategoryId, WordStatus } from '../types'
-import { CATEGORIES, WORDS } from '../data/vocabulary'
+import type { CategoryId, Word, WordStatus } from '../types'
+import { CATEGORIES, SAVED_CATEGORY, WORDS } from '../data/vocabulary'
 
 interface VocabularyProps {
   wordStatus: Record<string, WordStatus>
+  savedWords: Word[]
+  onRemoveSaved: (wordId: string) => void
 }
 
 const PAGE_SIZE = 30
 
-export function Vocabulary({ wordStatus }: VocabularyProps) {
+export function Vocabulary({ wordStatus, savedWords, onRemoveSaved }: VocabularyProps) {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState<CategoryId | 'all'>('all')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -24,14 +26,17 @@ export function Vocabulary({ wordStatus }: VocabularyProps) {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  const allWords = useMemo(() => [...WORDS, ...savedWords], [savedWords])
+  const categories = savedWords.length > 0 ? [...CATEGORIES, SAVED_CATEGORY] : CATEGORIES
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    return WORDS.filter((w) => {
+    return allWords.filter((w) => {
       if (category !== 'all' && w.category !== category) return false
       if (!q) return true
       return w.indonesian.toLowerCase().includes(q) || w.english.toLowerCase().includes(q)
     })
-  }, [search, category])
+  }, [search, category, allWords])
 
   return (
     <div className="vocabulary">
@@ -48,9 +53,9 @@ export function Vocabulary({ wordStatus }: VocabularyProps) {
           className={`pill ${category === 'all' ? 'pill-active' : ''}`}
           onClick={() => setCategory('all')}
         >
-          All ({WORDS.length})
+          All ({allWords.length})
         </button>
-        {CATEGORIES.map((c) => (
+        {categories.map((c) => (
           <button
             key={c.id}
             className={`pill ${category === c.id ? 'pill-active' : ''}`}
@@ -81,6 +86,16 @@ export function Vocabulary({ wordStatus }: VocabularyProps) {
                 <span className={`status-badge status-${status}`}>
                   {status === 'known' ? '✓ known' : status === 'learning' ? '~ learning' : 'new'}
                 </span>
+                {w.category === 'saved' && (
+                  <button
+                    className="vocab-remove"
+                    onClick={() => onRemoveSaved(w.id)}
+                    aria-label={`Remove "${w.indonesian}" from saved words`}
+                    title="Remove from My Words"
+                  >
+                    ✕
+                  </button>
+                )}
               </li>
             )
           })}

@@ -16,6 +16,7 @@ export type CategoryId =
   | 'verbs'
   | 'adjectives'
   | 'time'
+  | 'saved'
 
 export interface Category {
   id: CategoryId
@@ -60,4 +61,6 @@ export interface Progress {
   quizStats: { correct: number; total: number }
   grammarStats: { correct: number; total: number }
   sentencesSolved: string[]
+  /** Words the user saved while reading news articles */
+  savedWords: Word[]
 }

@@ -66,13 +66,15 @@ export function Home({ progress, onNavigate, onReset }: HomeProps) {
         <div className="progress-bar-label">
           <span>Overall vocabulary progress</span>
           <span>
-            {knownCount} / {WORDS.length}
+            {knownCount} / {WORDS.length + progress.savedWords.length}
           </span>
         </div>
         <div className="progress-bar">
           <div
             className="progress-bar-fill"
-            style={{ width: `${(knownCount / WORDS.length) * 100}%` }}
+            style={{
+              width: `${(knownCount / (WORDS.length + progress.savedWords.length)) * 100}%`,
+            }}
           />
         </div>
       </div>

@@ -1,24 +1,28 @@
 import { useMemo, useState } from 'react'
-import type { CategoryId, WordStatus } from '../types'
-import { CATEGORIES, WORDS } from '../data/vocabulary'
+import type { CategoryId, Word, WordStatus } from '../types'
+import { CATEGORIES, SAVED_CATEGORY, WORDS } from '../data/vocabulary'
 import { shuffle } from '../utils'
 
 interface FlashcardsProps {
   wordStatus: Record<string, WordStatus>
+  savedWords: Word[]
   onSetStatus: (wordId: string, status: WordStatus) => void
 }
 
-export function Flashcards({ wordStatus, onSetStatus }: FlashcardsProps) {
+export function Flashcards({ wordStatus, savedWords, onSetStatus }: FlashcardsProps) {
   const [category, setCategory] = useState<CategoryId | 'all'>('all')
   const [deckSeed, setDeckSeed] = useState(0)
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
 
+  const allWords = useMemo(() => [...WORDS, ...savedWords], [savedWords])
+  const categories = savedWords.length > 0 ? [...CATEGORIES, SAVED_CATEGORY] : CATEGORIES
+
   const deck = useMemo(() => {
-    const pool = category === 'all' ? WORDS : WORDS.filter((w) => w.category === category)
+    const pool = category === 'all' ? allWords : allWords.filter((w) => w.category === category)
     return shuffle(pool)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, deckSeed])
+  }, [category, deckSeed, allWords])
 
   const word = deck[index]
 
@@ -52,7 +56,7 @@ export function Flashcards({ wordStatus, onSetStatus }: FlashcardsProps) {
         >
           All
         </button>
-        {CATEGORIES.map((c) => (
+        {categories.map((c) => (
           <button
             key={c.id}
             className={`pill ${category === c.id ? 'pill-active' : ''}`}

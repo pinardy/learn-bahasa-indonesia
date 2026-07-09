@@ -1,5 +1,7 @@
 import type { Category, Word } from '../types'
 
+export const SAVED_CATEGORY: Category = { id: 'saved', name: 'My Words', emoji: '⭐' }
+
 export const CATEGORIES: Category[] = [
   { id: 'greetings', name: 'Greetings', emoji: '👋' },
   { id: 'numbers', name: 'Numbers', emoji: '🔢' },

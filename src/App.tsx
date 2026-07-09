@@ -29,6 +29,8 @@ export default function App() {
     recordQuizAnswer,
     recordGrammarAnswer,
     markSentenceSolved,
+    saveWord,
+    removeSavedWord,
     resetProgress,
   } = useProgress()
 
@@ -57,15 +59,25 @@ export default function App() {
           <Home progress={progress} onNavigate={(v) => setView(v as View)} onReset={resetProgress} />
         )}
         {view === 'flashcards' && (
-          <Flashcards wordStatus={progress.wordStatus} onSetStatus={setWordStatus} />
+          <Flashcards
+            wordStatus={progress.wordStatus}
+            savedWords={progress.savedWords}
+            onSetStatus={setWordStatus}
+          />
         )}
-        {view === 'quiz' && <Quiz onAnswer={recordQuizAnswer} />}
+        {view === 'quiz' && <Quiz savedWords={progress.savedWords} onAnswer={recordQuizAnswer} />}
         {view === 'sentences' && (
           <SentenceBuilder solved={progress.sentencesSolved} onSolved={markSentenceSolved} />
         )}
         {view === 'grammar' && <Grammar onAnswer={recordGrammarAnswer} />}
-        {view === 'vocabulary' && <Vocabulary wordStatus={progress.wordStatus} />}
-        {view === 'news' && <News />}
+        {view === 'vocabulary' && (
+          <Vocabulary
+            wordStatus={progress.wordStatus}
+            savedWords={progress.savedWords}
+            onRemoveSaved={removeSavedWord}
+          />
+        )}
+        {view === 'news' && <News savedWords={progress.savedWords} onSaveWord={saveWord} />}
       </main>
     </div>
   )

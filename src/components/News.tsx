@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { NewsArticle } from '../types'
+import type { NewsArticle, Word } from '../types'
 import { fetchNews, NEWS_SOURCES, SAMPLE_ARTICLES, type NewsSource } from '../services/news'
 import { translateIdToEn } from '../services/translate'
+import { WORDS } from '../data/vocabulary'
+
+const LOOKUP_FAILED = '(translation unavailable)'
 
 interface Translation {
   status: 'loading' | 'done' | 'error'
@@ -13,6 +16,11 @@ interface WordLookup {
   articleId: string
   word: string
   translation: string | null // null while loading
+}
+
+interface NewsProps {
+  savedWords: Word[]
+  onSaveWord: (word: Word) => void
 }
 
 function cleanWord(token: string): string {
@@ -53,7 +61,7 @@ function formatDate(iso?: string): string | null {
 
 const PAGE_SIZE = 10
 
-export function News() {
+export function News({ savedWords, onSaveWord }: NewsProps) {
   const [source, setSource] = useState<NewsSource>(NEWS_SOURCES[0])
   const [articles, setArticles] = useState<NewsArticle[]>([])
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -124,10 +132,26 @@ export function News() {
     } catch {
       setLookup((current) =>
         current && current.word === word && current.articleId === articleId
-          ? { ...current, translation: '(translation unavailable)' }
+          ? { ...current, translation: LOOKUP_FAILED }
           : current
       )
     }
+  }
+
+  const isInVocabulary = (word: string) => {
+    const lower = word.toLowerCase()
+    return [...WORDS, ...savedWords].some((w) => w.indonesian.toLowerCase() === lower)
+  }
+
+  const saveLookup = (activeLookup: WordLookup) => {
+    if (!activeLookup.translation || activeLookup.translation === LOOKUP_FAILED) return
+    const indonesian = activeLookup.word.toLowerCase()
+    onSaveWord({
+      id: `saved-${indonesian}`,
+      indonesian,
+      english: activeLookup.translation.toLowerCase(),
+      category: 'saved',
+    })
   }
 
   const renderTappableText = (article: NewsArticle, text: string) =>
@@ -225,6 +249,18 @@ export function News() {
                       <div className="news-word-lookup">
                         <strong>{activeLookup.word}</strong>
                         <span> → {activeLookup.translation ?? '…'}</span>
+                        {activeLookup.translation &&
+                          activeLookup.translation !== LOOKUP_FAILED &&
+                          (isInVocabulary(activeLookup.word) ? (
+                            <span className="lookup-saved-note">✓ in your vocabulary</span>
+                          ) : (
+                            <button
+                              className="lookup-save-btn"
+                              onClick={() => saveLookup(activeLookup)}
+                            >
+                              ＋ Save word
+                            </button>
+                          ))}
                       </div>
                     )}
 

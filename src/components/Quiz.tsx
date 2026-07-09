@@ -4,6 +4,7 @@ import { WORDS } from '../data/vocabulary'
 import { sample, shuffle } from '../utils'
 
 interface QuizProps {
+  savedWords: Word[]
   onAnswer: (correct: boolean) => void
 }
 
@@ -16,22 +17,27 @@ interface Question {
 
 const QUIZ_LENGTH = 10
 
-function makeQuestion(word: Word): Question {
+function makeQuestion(word: Word, pool: Word[]): Question {
   const direction: Question['direction'] = Math.random() < 0.5 ? 'id-en' : 'en-id'
   const answer = direction === 'id-en' ? word.english : word.indonesian
-  const distractors = sample(
-    WORDS.filter((w) => w.id !== word.id),
-    3
-  ).map((w) => (direction === 'id-en' ? w.english : w.indonesian))
-  return { word, direction, options: shuffle([answer, ...distractors]), answer }
+  // Set dedupes distractors that share text with the answer or each other
+  const options = new Set<string>([answer])
+  for (const w of shuffle(pool)) {
+    if (options.size >= 4) break
+    if (w.id === word.id) continue
+    options.add(direction === 'id-en' ? w.english : w.indonesian)
+  }
+  return { word, direction, options: shuffle([...options]), answer }
 }
 
-function makeQuiz(): Question[] {
-  return sample(WORDS, QUIZ_LENGTH).map(makeQuestion)
+function makeQuiz(pool: Word[]): Question[] {
+  return sample(pool, QUIZ_LENGTH).map((word) => makeQuestion(word, pool))
 }
 
-export function Quiz({ onAnswer }: QuizProps) {
-  const [questions, setQuestions] = useState<Question[]>(makeQuiz)
+export function Quiz({ savedWords, onAnswer }: QuizProps) {
+  const [questions, setQuestions] = useState<Question[]>(() =>
+    makeQuiz([...WORDS, ...savedWords])
+  )
   const [current, setCurrent] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
   const [score, setScore] = useState(0)
@@ -57,12 +63,12 @@ export function Quiz({ onAnswer }: QuizProps) {
   }
 
   const restart = useCallback(() => {
-    setQuestions(makeQuiz())
+    setQuestions(makeQuiz([...WORDS, ...savedWords]))
     setCurrent(0)
     setSelected(null)
     setScore(0)
     setFinished(false)
-  }, [])
+  }, [savedWords])
 
   if (finished) {
     const pct = Math.round((score / questions.length) * 100)

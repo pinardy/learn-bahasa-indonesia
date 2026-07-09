@@ -1075,7 +1075,46 @@
   padding: 8px 14px;
   font-size: 0.95rem;
   margin-bottom: 14px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lookup-save-btn {
+  background: var(--amber);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: background 0.15s;
+}
+
+.lookup-save-btn:hover {
+  background: #935d10;
+}
+
+.lookup-saved-note {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.vocab-remove {
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  padding: 4px 6px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.vocab-remove:hover {
+  color: var(--red);
+  background: #fdeaea;
 }
 
 .news-translation {
