@@ -1068,6 +1068,31 @@
   color: var(--amber);
 }
 
+.news-word-known {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.news-word-learning {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.news-word-known:hover {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.tip-chip {
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-weight: 600;
+}
+
+.lookup-save-btn:disabled {
+  opacity: 0.6;
+}
+
 .news-word-lookup {
   background: var(--amber-soft);
   color: var(--amber);

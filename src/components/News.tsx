@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
-import type { NewsArticle, Word } from '../types'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { NewsArticle, Word, WordStatus } from '../types'
 import { fetchNews, NEWS_SOURCES, SAMPLE_ARTICLES, type NewsSource } from '../services/news'
 import { translateIdToEn } from '../services/translate'
 import { WORDS } from '../data/vocabulary'
@@ -20,7 +20,17 @@ interface WordLookup {
 
 interface NewsProps {
   savedWords: Word[]
+  wordStatus: Record<string, WordStatus>
   onSaveWord: (word: Word) => void
+}
+
+/** Find the sentence within a snippet that contains the given word */
+function sentenceContaining(text: string, word: string): string | undefined {
+  const lower = word.toLowerCase()
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .find((s) => s.toLowerCase().includes(lower))
+    ?.trim()
 }
 
 function cleanWord(token: string): string {
@@ -61,7 +71,7 @@ function formatDate(iso?: string): string | null {
 
 const PAGE_SIZE = 10
 
-export function News({ savedWords, onSaveWord }: NewsProps) {
+export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
   const [source, setSource] = useState<NewsSource>(NEWS_SOURCES[0])
   const [articles, setArticles] = useState<NewsArticle[]>([])
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -70,6 +80,22 @@ export function News({ savedWords, onSaveWord }: NewsProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [translations, setTranslations] = useState<Record<string, Translation>>({})
   const [lookup, setLookup] = useState<WordLookup | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  // learning status per lowercase Indonesian word, for highlighting in snippets;
+  // saved words without an explicit status count as "learning"
+  const statusByWord = useMemo(() => {
+    const map = new Map<string, WordStatus>()
+    for (const w of WORDS) {
+      const status = wordStatus[w.id]
+      if (status && status !== 'new') map.set(w.indonesian.toLowerCase(), status)
+    }
+    for (const w of savedWords) {
+      const status = wordStatus[w.id] ?? 'learning'
+      if (status !== 'new') map.set(w.indonesian.toLowerCase(), status)
+    }
+    return map
+  }, [savedWords, wordStatus])
 
   const load = useCallback(async (src: NewsSource) => {
     setLoading(true)
@@ -143,23 +169,42 @@ export function News({ savedWords, onSaveWord }: NewsProps) {
     return [...WORDS, ...savedWords].some((w) => w.indonesian.toLowerCase() === lower)
   }
 
-  const saveLookup = (activeLookup: WordLookup) => {
+  const saveLookup = async (activeLookup: WordLookup, article: NewsArticle) => {
     if (!activeLookup.translation || activeLookup.translation === LOOKUP_FAILED) return
     const indonesian = activeLookup.word.toLowerCase()
+
+    // keep the sentence the word appeared in as the flashcard example
+    const example = sentenceContaining(article.snippet, activeLookup.word)
+    let exampleTranslation: string | undefined
+    if (example) {
+      setSaving(true)
+      try {
+        exampleTranslation = await translateIdToEn(example)
+      } catch {
+        exampleTranslation = undefined
+      } finally {
+        setSaving(false)
+      }
+    }
+
     onSaveWord({
       id: `saved-${indonesian}`,
       indonesian,
       english: activeLookup.translation.toLowerCase(),
       category: 'saved',
+      example,
+      exampleTranslation,
     })
   }
 
   const renderTappableText = (article: NewsArticle, text: string) =>
-    text.split(/(\s+)/).map((token, i) =>
-      /\S/.test(token) ? (
+    text.split(/(\s+)/).map((token, i) => {
+      if (!/\S/.test(token)) return token
+      const status = statusByWord.get(cleanWord(token).toLowerCase())
+      return (
         <button
           key={i}
-          className="news-word"
+          className={`news-word ${status ? `news-word-${status}` : ''}`}
           onClick={(e) => {
             e.stopPropagation()
             void lookupWord(article.id, token)
@@ -167,10 +212,8 @@ export function News({ savedWords, onSaveWord }: NewsProps) {
         >
           {token}
         </button>
-      ) : (
-        token
       )
-    )
+    })
 
   return (
     <div className="news">
@@ -188,7 +231,9 @@ export function News({ savedWords, onSaveWord }: NewsProps) {
 
       <p className="news-tip">
         💡 Read the Indonesian first, tap any word for its meaning, then reveal the English
-        translation to check yourself.
+        translation to check yourself. Words are tinted by your progress:{' '}
+        <span className="news-word-known tip-chip">known</span>{' '}
+        <span className="news-word-learning tip-chip">learning</span>
       </p>
 
       <div className="news-toolbar">
@@ -256,9 +301,10 @@ export function News({ savedWords, onSaveWord }: NewsProps) {
                           ) : (
                             <button
                               className="lookup-save-btn"
-                              onClick={() => saveLookup(activeLookup)}
+                              disabled={saving}
+                              onClick={() => void saveLookup(activeLookup, article)}
                             >
-                              ＋ Save word
+                              {saving ? 'Saving…' : '＋ Save word'}
                             </button>
                           ))}
                       </div>

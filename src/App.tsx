@@ -77,7 +77,13 @@ export default function App() {
             onRemoveSaved={removeSavedWord}
           />
         )}
-        {view === 'news' && <News savedWords={progress.savedWords} onSaveWord={saveWord} />}
+        {view === 'news' && (
+          <News
+            savedWords={progress.savedWords}
+            wordStatus={progress.wordStatus}
+            onSaveWord={saveWord}
+          />
+        )}
       </main>
     </div>
   )
