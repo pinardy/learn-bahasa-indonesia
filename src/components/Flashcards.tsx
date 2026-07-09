@@ -119,7 +119,7 @@ export function Flashcards({
           }
         }}
       >
-        <div className="flashcard-inner">
+        <div className="flashcard-inner" key={`${deckSeed}-${index}`}>
           <div className="flashcard-face flashcard-front">
             <span className="flashcard-lang">Bahasa Indonesia</span>
             <span className="flashcard-word">{word.indonesian}</span>
