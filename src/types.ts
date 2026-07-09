@@ -21,6 +21,13 @@ export type CategoryId =
   | 'animals'
   | 'weather'
   | 'household'
+  | 'question'
+  | 'places'
+  | 'transport'
+  | 'jobs'
+  | 'feelings'
+  | 'clothing'
+  | 'money'
   | 'saved'
 
 export interface Category {
