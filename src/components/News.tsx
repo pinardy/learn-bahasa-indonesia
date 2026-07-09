@@ -155,7 +155,9 @@ export function News() {
       )}
 
       {loading ? (
-        <p className="news-loading">Memuat berita… (Loading news…)</p>
+        <div className="news-loading" role="status" aria-label="Loading news">
+          <span className="spinner" />
+        </div>
       ) : (
         <ul className="news-list">
           {articles.map((article) => {
