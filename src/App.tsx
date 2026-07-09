@@ -61,7 +61,7 @@ export default function App() {
           ))}
         </nav>
         <button
-          className="icon-btn"
+          className="icon-btn theme-toggle"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
