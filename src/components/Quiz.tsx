@@ -3,6 +3,7 @@ import type { Word } from '../types'
 import { WORDS } from '../data/vocabulary'
 import { levenshtein, sample, shuffle } from '../utils'
 import { SpeakButton } from './SpeakButton'
+import { speak } from '../services/speech'
 
 interface QuizProps {
   savedWords: Word[]
@@ -16,12 +17,17 @@ interface Question {
   answer: string
 }
 
-type QuizMode = 'choice' | 'typed'
+type QuizMode = 'choice' | 'typed' | 'listen'
 
 const QUIZ_LENGTH = 10
 
-function makeQuestion(word: Word, pool: Word[]): Question {
-  const direction: Question['direction'] = Math.random() < 0.5 ? 'id-en' : 'en-id'
+function makeQuestion(
+  word: Word,
+  pool: Word[],
+  forcedDirection?: Question['direction']
+): Question {
+  const direction: Question['direction'] =
+    forcedDirection ?? (Math.random() < 0.5 ? 'id-en' : 'en-id')
   const answer = direction === 'id-en' ? word.english : word.indonesian
   // Set dedupes distractors that share text with the answer or each other
   const options = new Set<string>([answer])
@@ -33,8 +39,8 @@ function makeQuestion(word: Word, pool: Word[]): Question {
   return { word, direction, options: shuffle([...options]), answer }
 }
 
-function makeQuiz(pool: Word[]): Question[] {
-  return sample(pool, QUIZ_LENGTH).map((word) => makeQuestion(word, pool))
+function makeQuiz(pool: Word[], forcedDirection?: Question['direction']): Question[] {
+  return sample(pool, QUIZ_LENGTH).map((word) => makeQuestion(word, pool, forcedDirection))
 }
 
 function normalize(text: string): string {
@@ -66,19 +72,28 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
     if (mode === 'typed' && !finished && selected === null) inputRef.current?.focus()
   }, [mode, current, finished, selected])
 
-  const restart = useCallback(() => {
-    setQuestions(makeQuiz([...WORDS, ...savedWords]))
-    setCurrent(0)
-    setSelected(null)
-    setTyped('')
-    setScore(0)
-    setFinished(false)
-  }, [savedWords])
+  // in listening mode, play the Indonesian word when a new question appears
+  useEffect(() => {
+    if (mode === 'listen' && !finished && question) speak(question.word.indonesian)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, current, finished])
+
+  const restart = useCallback(
+    (m: QuizMode) => {
+      setQuestions(makeQuiz([...WORDS, ...savedWords], m === 'listen' ? 'id-en' : undefined))
+      setCurrent(0)
+      setSelected(null)
+      setTyped('')
+      setScore(0)
+      setFinished(false)
+    },
+    [savedWords]
+  )
 
   const switchMode = (m: QuizMode) => {
     if (m === mode) return
     setMode(m)
-    restart()
+    restart(m)
   }
 
   const gradeTyped = (attempt: string) =>
@@ -87,7 +102,7 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
   const choose = (option: string) => {
     if (selected !== null) return
     setSelected(option)
-    const correct = mode === 'choice' ? option === question.answer : gradeTyped(option)
+    const correct = mode === 'typed' ? gradeTyped(option) : option === question.answer
     if (correct) setScore((s) => s + 1)
     onAnswer(correct)
   }
@@ -116,6 +131,12 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
       >
         ⌨️ Type the answer
       </button>
+      <button
+        className={`pill ${mode === 'listen' ? 'pill-active' : ''}`}
+        onClick={() => switchMode('listen')}
+      >
+        🎧 Listening
+      </button>
     </div>
   )
 
@@ -136,7 +157,7 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
                 ? 'Bagus! Keep practicing!'
                 : 'Keep going — review the flashcards and try again!'}
           </p>
-          <button className="btn btn-primary" onClick={restart}>
+          <button className="btn btn-primary" onClick={() => restart(mode)}>
             Try another quiz
           </button>
         </div>
@@ -146,9 +167,9 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
 
   const answered = selected !== null
   const isCorrect = answered
-    ? mode === 'choice'
-      ? selected === question.answer
-      : gradeTyped(selected)
+    ? mode === 'typed'
+      ? gradeTyped(selected)
+      : selected === question.answer
     : false
   const isTypo =
     answered && mode === 'typed' && isCorrect && normalize(selected) !== normalize(typedAnswer)
@@ -178,13 +199,29 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
       </div>
 
       <div className="quiz-question">
-        <span className="quiz-direction">
-          {promptLang} → {targetLang}
-        </span>
-        <h2>{prompt}</h2>
+        {mode === 'listen' ? (
+          <>
+            <span className="quiz-direction">Listen and choose the meaning</span>
+            <button
+              type="button"
+              className="listen-replay"
+              onClick={() => speak(question.word.indonesian)}
+              aria-label="Play the word again"
+            >
+              🔊
+            </button>
+          </>
+        ) : (
+          <>
+            <span className="quiz-direction">
+              {promptLang} → {targetLang}
+            </span>
+            <h2>{prompt}</h2>
+          </>
+        )}
       </div>
 
-      {mode === 'choice' ? (
+      {mode !== 'typed' ? (
         <div className="quiz-options">
           {question.options.map((option) => {
             let cls = 'quiz-option'
@@ -245,6 +282,11 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
                   Salah — the answer is “{correctAnswer}”
                   <SpeakButton text={question.word.indonesian} size="sm" />
                 </strong>
+              )}
+              {mode === 'listen' && (
+                <p>
+                  You heard: <strong>{question.word.indonesian}</strong>
+                </p>
               )}
               {question.word.example && (
                 <p>

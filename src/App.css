@@ -1273,6 +1273,34 @@
   text-decoration: underline;
 }
 
+.sentence-reveal {
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+
+.listen-replay {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: none;
+  background: var(--red);
+  color: #fff;
+  font-size: 2.4rem;
+  line-height: 1;
+  margin: 8px auto 0;
+  display: block;
+  box-shadow: var(--shadow);
+  transition: transform 0.1s, background 0.15s;
+}
+
+.listen-replay:hover {
+  background: var(--red-dark);
+}
+
+.listen-replay:active {
+  transform: scale(0.94);
+}
+
 /* ===== Speak button ===== */
 .speak-btn {
   background: none;

@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { SENTENCES } from '../data/sentences'
 import { shuffle } from '../utils'
 import { SpeakButton } from './SpeakButton'
+import { speak } from '../services/speech'
+
+type BuilderMode = 'translate' | 'dictation'
 
 interface SentenceBuilderProps {
   solved: string[]
@@ -21,9 +24,23 @@ export function SentenceBuilder({ solved, onSolved }: SentenceBuilderProps) {
   const [attempt, setAttempt] = useState(0)
   const [placed, setPlaced] = useState<Tile[]>([])
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null)
+  const [mode, setMode] = useState<BuilderMode>('translate')
 
   const sentence = SENTENCES[sentenceIndex]
   const targetWords = useMemo(() => sentence.indonesian.split(' '), [sentence])
+
+  // in dictation mode, play the sentence when it changes (and on entering the mode)
+  useEffect(() => {
+    if (mode === 'dictation') speak(sentence.indonesian)
+  }, [mode, sentence])
+
+  const switchMode = (m: BuilderMode) => {
+    if (m === mode) return
+    setMode(m)
+    setPlaced([])
+    setResult(null)
+    setAttempt((a) => a + 1)
+  }
 
   const tiles = useMemo<Tile[]>(
     () => shuffle(targetWords.map((text, key) => ({ key, text }))),
@@ -66,6 +83,21 @@ export function SentenceBuilder({ solved, onSolved }: SentenceBuilderProps) {
 
   return (
     <div className="sentence-builder">
+      <div className="category-pills">
+        <button
+          className={`pill ${mode === 'translate' ? 'pill-active' : ''}`}
+          onClick={() => switchMode('translate')}
+        >
+          🧩 Translate
+        </button>
+        <button
+          className={`pill ${mode === 'dictation' ? 'pill-active' : ''}`}
+          onClick={() => switchMode('dictation')}
+        >
+          🎧 Dictation
+        </button>
+      </div>
+
       <div className="sentence-levels">
         {Array.from(new Set(SENTENCES.map((s) => s.level))).map((level) => {
           const entries = SENTENCES.map((s, i) => ({ s, i })).filter(({ s }) => s.level === level)
@@ -98,8 +130,24 @@ export function SentenceBuilder({ solved, onSolved }: SentenceBuilderProps) {
       </div>
 
       <div className="sentence-prompt">
-        <span className="sentence-label">Translate into Indonesian:</span>
-        <h2>“{sentence.english}”</h2>
+        {mode === 'dictation' ? (
+          <>
+            <span className="sentence-label">Listen, then arrange the words you hear:</span>
+            <button
+              type="button"
+              className="listen-replay"
+              onClick={() => speak(sentence.indonesian)}
+              aria-label="Play the sentence again"
+            >
+              🔊
+            </button>
+          </>
+        ) : (
+          <>
+            <span className="sentence-label">Translate into Indonesian:</span>
+            <h2>“{sentence.english}”</h2>
+          </>
+        )}
       </div>
 
       <div className={`sentence-slots ${result === 'wrong' ? 'sentence-slots-wrong' : ''} ${result === 'correct' ? 'sentence-slots-correct' : ''}`}>
@@ -124,6 +172,7 @@ export function SentenceBuilder({ solved, onSolved }: SentenceBuilderProps) {
           <p className="text-success">
             <strong>Benar! 🎉</strong> “{sentence.indonesian}”
             <SpeakButton text={sentence.indonesian} size="sm" />
+            {mode === 'dictation' && <span className="sentence-reveal"> — “{sentence.english}”</span>}
           </p>
           <button
             className="btn btn-primary"
