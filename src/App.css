@@ -364,7 +364,7 @@
 
 .flashcard-back {
   transform: rotateY(180deg);
-  background: #fff8f0;
+  background: var(--card-warm);
 }
 
 .flashcard-lang {
@@ -479,7 +479,7 @@
 
 .quiz-option-wrong {
   border-color: var(--red);
-  background: #fdeaea;
+  background: var(--red-soft);
 }
 
 .quiz-option-dim {
@@ -754,7 +754,7 @@
 }
 
 .word-tile-placed {
-  background: #fff8f0;
+  background: var(--card-warm);
   border-color: var(--red);
 }
 
@@ -1139,7 +1139,7 @@
 
 .vocab-remove:hover {
   color: var(--red);
-  background: #fdeaea;
+  background: var(--red-soft);
 }
 
 .news-translation {

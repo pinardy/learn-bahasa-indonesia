@@ -5,6 +5,12 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Belajar! — Learn Bahasa Indonesia</title>
+    <script>
+      // set the theme before first paint to avoid a light-mode flash
+      document.documentElement.dataset.theme =
+        localStorage.getItem('bahasa-theme') ??
+        (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    </script>
   </head>
   <body>
     <div id="root"></div>

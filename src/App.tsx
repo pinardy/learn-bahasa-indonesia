@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useProgress } from './hooks/useProgress'
 import { Home } from './components/Home'
 import { Flashcards } from './components/Flashcards'
@@ -23,6 +23,14 @@ const NAV_ITEMS: { view: View; label: string; emoji: string }[] = [
 
 export default function App() {
   const [view, setView] = useState<View>('home')
+  const [theme, setTheme] = useState<'light' | 'dark'>(() =>
+    document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
+  )
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    localStorage.setItem('bahasa-theme', theme)
+  }, [theme])
   const {
     progress,
     setWordStatus,
@@ -52,6 +60,14 @@ export default function App() {
             </button>
           ))}
         </nav>
+        <button
+          className="icon-btn"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        >
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
       </header>
 
       <main className="app-main">
