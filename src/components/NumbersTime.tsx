@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { makeNumberQuestion, makeTimeQuestion, type TrainerQuestion } from '../numbers'
 import { SpeakButton } from './SpeakButton'
+import { useEnterKey } from '../hooks/useEnterKey'
 
 type TrainerMode = 'numbers' | 'time'
 
@@ -48,6 +49,9 @@ export function NumbersTime() {
       setSelected(null)
     }
   }
+
+  // press Enter to advance once a question is answered
+  useEnterKey(selected !== null && !finished, next)
 
   const modePills = (
     <div className="category-pills">

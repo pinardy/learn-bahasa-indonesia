@@ -4,6 +4,7 @@ import { WORDS } from '../data/vocabulary'
 import { levenshtein, sample, shuffle } from '../utils'
 import { SpeakButton } from './SpeakButton'
 import { speak } from '../services/speech'
+import { useEnterKey } from '../hooks/useEnterKey'
 
 interface QuizProps {
   savedWords: Word[]
@@ -116,6 +117,9 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
       setTyped('')
     }
   }
+
+  // press Enter to advance once a question is answered
+  useEnterKey(selected !== null && !finished, next)
 
   const modePills = (
     <div className="category-pills">
@@ -294,7 +298,7 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
                 </p>
               )}
             </div>
-            <button className="btn btn-primary" onClick={next} autoFocus={mode === 'typed'}>
+            <button className="btn btn-primary" onClick={next}>
               {current + 1 >= questions.length ? 'See results' : 'Next →'}
             </button>
           </div>

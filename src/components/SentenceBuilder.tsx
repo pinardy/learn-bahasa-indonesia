@@ -3,6 +3,7 @@ import { SENTENCES } from '../data/sentences'
 import { shuffle } from '../utils'
 import { SpeakButton } from './SpeakButton'
 import { speak } from '../services/speech'
+import { useEnterKey } from '../hooks/useEnterKey'
 
 type BuilderMode = 'translate' | 'dictation'
 
@@ -80,6 +81,9 @@ export function SentenceBuilder({ solved, onSolved }: SentenceBuilderProps) {
     setResult(null)
     setAttempt((a) => a + 1)
   }
+
+  // press Enter to move to the next sentence once solved correctly
+  useEnterKey(result === 'correct', () => goTo((sentenceIndex + 1) % SENTENCES.length))
 
   return (
     <div className="sentence-builder">

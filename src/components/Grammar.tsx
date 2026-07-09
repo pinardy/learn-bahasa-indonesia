@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { GRAMMAR_EXERCISES } from '../data/grammar'
 import { shuffle } from '../utils'
+import { useEnterKey } from '../hooks/useEnterKey'
 
 interface GrammarProps {
   onAnswer: (correct: boolean) => void
@@ -43,6 +44,9 @@ export function Grammar({ onAnswer }: GrammarProps) {
     setScore(0)
     setFinished(false)
   }, [])
+
+  // press Enter to advance once an exercise is answered
+  useEnterKey(selected !== null && !finished, next)
 
   if (finished) {
     const pct = Math.round((score / exercises.length) * 100)
