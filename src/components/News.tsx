@@ -141,15 +141,28 @@ export function News() {
             {s.emoji} {s.name}
           </button>
         ))}
-        <button className="pill pill-refresh" onClick={() => void load(source)} title="Refresh">
-          ↻ Refresh
-        </button>
       </div>
 
       <p className="news-tip">
         💡 Read the Indonesian first, tap any word for its meaning, then reveal the English
         translation to check yourself.
       </p>
+
+      <div className="news-toolbar">
+        <span className="news-toolbar-info">
+          {source.emoji} {source.name}
+          {!loading && !offline && ` · ${articles.length} articles`}
+        </span>
+        <button
+          className={`icon-btn ${loading ? 'icon-btn-spinning' : ''}`}
+          onClick={() => void load(source)}
+          disabled={loading}
+          aria-label="Refresh news"
+          title="Refresh news"
+        >
+          ↻
+        </button>
+      </div>
 
       {offline && (
         <div className="news-offline">
