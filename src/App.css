@@ -352,6 +352,7 @@
 .flashcard {
   width: min(100%, 440px);
   height: 280px;
+  -webkit-perspective: 1200px;
   perspective: 1200px;
   cursor: pointer;
 }
@@ -360,11 +361,14 @@
   position: relative;
   width: 100%;
   height: 100%;
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
+  -webkit-transition: -webkit-transform 0.5s;
   transition: transform 0.5s;
 }
 
 .flashcard-flipped .flashcard-inner {
+  -webkit-transform: rotateY(180deg);
   transform: rotateY(180deg);
 }
 
@@ -387,6 +391,7 @@
 }
 
 .flashcard-back {
+  -webkit-transform: rotateY(180deg);
   transform: rotateY(180deg);
   background: var(--card-warm);
 }
