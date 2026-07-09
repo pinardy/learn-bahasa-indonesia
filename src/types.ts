@@ -16,6 +16,11 @@ export type CategoryId =
   | 'verbs'
   | 'adjectives'
   | 'time'
+  | 'colors'
+  | 'body'
+  | 'animals'
+  | 'weather'
+  | 'household'
   | 'saved'
 
 export interface Category {

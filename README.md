@@ -7,7 +7,7 @@ An interactive web app for learning Bahasa Indonesia, built with React, TypeScri
 - **🃏 Flashcards** — flip cards to memorize words, filter by category, and mark each word as "known" or "still learning"
 - **❓ Quiz** — 10-question multiple-choice rounds, testing both Indonesian → English and English → Indonesian
 - **🧩 Sentence Builder** — arrange shuffled word tiles to translate English sentences into Indonesian
-- **📖 Vocabulary browser** — search and browse 100+ words across 8 categories (greetings, numbers, food, family, travel, verbs, adjectives, time)
+- **📖 Vocabulary browser** — search and browse 160+ words across 13 categories (greetings, numbers, food, family, travel, verbs, adjectives, time, colors, body, animals, nature & weather, household)
 - **📰 News** — read real headlines from CNN Indonesia, Antara, CNBC Indonesia, Tempo, and Republika; tap any word for its English meaning, then reveal the full English translation to check your understanding
 - **📊 Progress tracking** — words known, quiz accuracy, and sentences solved are saved to localStorage
 - **📱 Installable PWA** — add it to your phone's home screen; the whole app works offline, including previously loaded news and cached translations
