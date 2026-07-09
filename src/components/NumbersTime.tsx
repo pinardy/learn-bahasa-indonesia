@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { makeNumberQuestion, makeTimeQuestion, type TrainerQuestion } from '../numbers'
+import { SpeakButton } from './SpeakButton'
 
 type TrainerMode = 'numbers' | 'time'
 
@@ -140,9 +141,15 @@ export function NumbersTime() {
           <div className="answer-bar-inner">
             <div className="answer-bar-text">
               {selected === question.answer ? (
-                <strong className="text-success">Benar! (Correct!)</strong>
+                <strong className="text-success">
+                  Benar! (Correct!)
+                  <SpeakButton text={question.answer} size="sm" />
+                </strong>
               ) : (
-                <strong className="text-error">Salah — the answer is “{question.answer}”</strong>
+                <strong className="text-error">
+                  Salah — the answer is “{question.answer}”
+                  <SpeakButton text={question.answer} size="sm" />
+                </strong>
               )}
             </div>
             <button className="btn btn-primary" onClick={next}>

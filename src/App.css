@@ -1273,6 +1273,48 @@
   text-decoration: underline;
 }
 
+/* ===== Speak button ===== */
+.speak-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  line-height: 1;
+  padding: 4px;
+  opacity: 0.75;
+  transition: opacity 0.15s, transform 0.1s, background 0.15s;
+  vertical-align: middle;
+}
+
+.speak-btn:hover {
+  opacity: 1;
+  background: var(--border);
+}
+
+.speak-btn:active {
+  transform: scale(0.9);
+}
+
+.speak-btn-sm {
+  font-size: 0.85rem;
+  margin-left: 6px;
+}
+
+.speak-btn-md {
+  font-size: 1rem;
+}
+
+.speak-btn-lg {
+  font-size: 1.3rem;
+}
+
+.flashcard-speak {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  opacity: 0.85;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 1000px) {
   .app-nav {

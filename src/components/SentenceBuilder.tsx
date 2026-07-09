@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { SENTENCES } from '../data/sentences'
 import { shuffle } from '../utils'
+import { SpeakButton } from './SpeakButton'
 
 interface SentenceBuilderProps {
   solved: string[]
@@ -122,6 +123,7 @@ export function SentenceBuilder({ solved, onSolved }: SentenceBuilderProps) {
         <div className="sentence-feedback">
           <p className="text-success">
             <strong>Benar! 🎉</strong> “{sentence.indonesian}”
+            <SpeakButton text={sentence.indonesian} size="sm" />
           </p>
           <button
             className="btn btn-primary"

@@ -3,6 +3,7 @@ import type { NewsArticle, Word, WordStatus } from '../types'
 import { fetchNews, NEWS_SOURCES, SAMPLE_ARTICLES, type NewsSource } from '../services/news'
 import { translateIdToEn } from '../services/translate'
 import { WORDS } from '../data/vocabulary'
+import { SpeakButton } from './SpeakButton'
 
 const LOOKUP_FAILED = '(translation unavailable)'
 
@@ -333,6 +334,7 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
                     {activeLookup && (
                       <div className="news-word-lookup">
                         <strong>{activeLookup.word}</strong>
+                        <SpeakButton text={activeLookup.word} size="sm" />
                         <span> → {activeLookup.translation ?? '…'}</span>
                         {activeLookup.translation &&
                           activeLookup.translation !== LOOKUP_FAILED &&

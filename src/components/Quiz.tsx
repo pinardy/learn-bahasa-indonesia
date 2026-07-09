@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Word } from '../types'
 import { WORDS } from '../data/vocabulary'
 import { levenshtein, sample, shuffle } from '../utils'
+import { SpeakButton } from './SpeakButton'
 
 interface QuizProps {
   savedWords: Word[]
@@ -237,9 +238,13 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
               {isCorrect ? (
                 <strong className="text-success">
                   {isTypo ? `Benar! Close enough — it's spelled “${correctAnswer}”` : 'Benar! (Correct!)'}
+                  <SpeakButton text={question.word.indonesian} size="sm" />
                 </strong>
               ) : (
-                <strong className="text-error">Salah — the answer is “{correctAnswer}”</strong>
+                <strong className="text-error">
+                  Salah — the answer is “{correctAnswer}”
+                  <SpeakButton text={question.word.indonesian} size="sm" />
+                </strong>
               )}
               {question.word.example && (
                 <p>

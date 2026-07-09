@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { CategoryId, Word, WordStatus } from '../types'
 import { CATEGORIES, SAVED_CATEGORY, WORDS } from '../data/vocabulary'
 import { shuffle } from '../utils'
+import { SpeakButton } from './SpeakButton'
 
 interface FlashcardsProps {
   wordStatus: Record<string, WordStatus>
@@ -92,11 +93,13 @@ export function Flashcards({ wordStatus, savedWords, onSetStatus }: FlashcardsPr
           <div className="flashcard-face flashcard-front">
             <span className="flashcard-lang">Bahasa Indonesia</span>
             <span className="flashcard-word">{word.indonesian}</span>
+            <SpeakButton text={word.indonesian} size="lg" className="flashcard-speak" />
             <span className="flashcard-hint">Tap to reveal</span>
           </div>
           <div className="flashcard-face flashcard-back">
             <span className="flashcard-lang">English</span>
             <span className="flashcard-word">{word.english}</span>
+            <SpeakButton text={word.indonesian} size="lg" className="flashcard-speak" />
             {word.example && (
               <div className="flashcard-example">
                 <em>{word.example}</em>

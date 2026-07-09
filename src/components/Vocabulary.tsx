@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CategoryId, Word, WordStatus } from '../types'
 import { CATEGORIES, SAVED_CATEGORY, WORDS } from '../data/vocabulary'
+import { SpeakButton } from './SpeakButton'
 
 interface VocabularyProps {
   wordStatus: Record<string, WordStatus>
@@ -75,7 +76,10 @@ export function Vocabulary({ wordStatus, savedWords, onRemoveSaved }: Vocabulary
             return (
               <li key={w.id} className="vocab-item">
                 <div className="vocab-words">
-                  <span className="vocab-id">{w.indonesian}</span>
+                  <span className="vocab-id">
+                    {w.indonesian}
+                    <SpeakButton text={w.indonesian} size="sm" />
+                  </span>
                   <span className="vocab-en">{w.english}</span>
                   {w.example && (
                     <span className="vocab-example">
