@@ -97,6 +97,7 @@
 }
 
 .nav-btn {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -109,7 +110,18 @@
   font-size: 0.95rem;
   color: var(--ink-soft);
   font-weight: 600;
+  user-select: none;
   transition: background 0.15s, color 0.15s;
+}
+
+/* Badge marking a pinned tab (pinned tabs float to the front of the nav). */
+.nav-pin {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  font-size: 0.6rem;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .nav-btn:hover {
