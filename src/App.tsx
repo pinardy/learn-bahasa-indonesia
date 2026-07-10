@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useProgress } from './hooks/useProgress'
 import { Home } from './components/Home'
 import { Flashcards } from './components/Flashcards'
@@ -39,10 +39,27 @@ export default function App() {
     document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
   )
 
+  // Show a fade/chevron hint while the nav can still be scrolled to the right
+  // (so mobile users know off-screen tabs like News exist).
+  const navRef = useRef<HTMLElement>(null)
+  const [navHasMore, setNavHasMore] = useState(false)
+
+  const updateNavFade = () => {
+    const el = navRef.current
+    if (!el) return
+    setNavHasMore(el.scrollWidth - el.clientWidth - el.scrollLeft > 1)
+  }
+
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     localStorage.setItem('bahasa-theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    updateNavFade()
+    window.addEventListener('resize', updateNavFade)
+    return () => window.removeEventListener('resize', updateNavFade)
+  }, [])
   const {
     progress,
     reviewWord,
@@ -71,18 +88,21 @@ export default function App() {
         <button className="brand" onClick={() => navigate('home')}>
           <span className="brand-flag">🇮🇩</span> Belajar!
         </button>
-        <nav className="app-nav">
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.view}
-              className={`nav-btn ${view === item.view ? 'nav-btn-active' : ''}`}
-              onClick={() => navigate(item.view)}
-            >
-              <span className="nav-emoji">{item.emoji}</span>
-              <span className="nav-label">{item.label}</span>
-            </button>
-          ))}
-        </nav>
+        <div className={`app-nav-wrap ${navHasMore ? 'has-more' : ''}`}>
+          <nav className="app-nav" ref={navRef} onScroll={updateNavFade}>
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.view}
+                className={`nav-btn ${view === item.view ? 'nav-btn-active' : ''}`}
+                onClick={() => navigate(item.view)}
+              >
+                <span className="nav-emoji">{item.emoji}</span>
+                <span className="nav-label">{item.label}</span>
+              </button>
+            ))}
+          </nav>
+          <span className="nav-scroll-hint" aria-hidden="true">›</span>
+        </div>
         <button
           className="icon-btn theme-toggle"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

@@ -41,8 +41,13 @@
   margin-right: 4px;
 }
 
-.app-nav {
+.app-nav-wrap {
   flex-basis: 100%; /* own row below the brand */
+  position: relative;
+  min-width: 0;
+}
+
+.app-nav {
   display: flex;
   gap: 6px;
   flex-wrap: nowrap;
@@ -53,6 +58,42 @@
 
 .app-nav::-webkit-scrollbar {
   display: none;
+}
+
+/* Right-edge fade + chevron: signals more tabs (e.g. News) when the nav can
+   still scroll right. Hidden on wide screens and once scrolled to the end. */
+.app-nav-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0), var(--cream));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.app-nav-wrap.has-more::after {
+  opacity: 1;
+}
+
+.nav-scroll-hint {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--ink-soft);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.app-nav-wrap.has-more .nav-scroll-hint {
+  opacity: 0.8;
 }
 
 .nav-btn {
