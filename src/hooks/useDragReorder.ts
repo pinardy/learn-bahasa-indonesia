@@ -112,6 +112,9 @@ export function useDragReorder<T extends string>(
   }
 
   const startPress = (item: T, e: ReactPointerEvent) => {
+    // Ignore extra touches while a drag is active (they would hijack the drag
+    // and reset the click guard), secondary pointers, and non-left buttons.
+    if (dragItemRef.current || !e.isPrimary || e.button !== 0) return
     didDrag.current = false
     pressStart.current = { x: e.clientX, y: e.clientY }
     pressPointerId.current = e.pointerId
