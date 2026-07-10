@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useProgress } from './hooks/useProgress'
+import { useDragReorder } from './hooks/useDragReorder'
 import { Home } from './components/Home'
 import { Flashcards } from './components/Flashcards'
 import { Quiz } from './components/Quiz'
@@ -36,6 +37,27 @@ const VIEWS = NAV_ITEMS.map((i) => i.view)
 const isView = (v: unknown): v is View =>
   typeof v === 'string' && VIEWS.includes(v as View)
 
+// Restore the user's custom tab order. Views added in later versions (missing
+// from the saved order) are appended in their default position.
+function loadNavOrder(): View[] {
+  try {
+    const saved = JSON.parse(localStorage.getItem('bahasa-nav-order') ?? 'null')
+    if (Array.isArray(saved)) {
+      const order = saved.filter(isView)
+      return [...order, ...VIEWS.filter((v) => !order.includes(v))]
+    }
+    // Migrate from the old pin feature (pinned tabs floated to the front).
+    const pinned = JSON.parse(localStorage.getItem('bahasa-pinned') ?? '[]')
+    if (Array.isArray(pinned)) {
+      const front = pinned.filter(isView)
+      if (front.length) return [...front, ...VIEWS.filter((v) => !front.includes(v))]
+    }
+  } catch {
+    // corrupted storage — fall back to the default order
+  }
+  return VIEWS
+}
+
 export default function App() {
   const [view, setView] = useState<View>(() => {
     const saved = localStorage.getItem('bahasa-view')
@@ -43,15 +65,8 @@ export default function App() {
   })
   const [startInReview, setStartInReview] = useState(false)
 
-  // Tabs the user has pinned to the front of the nav (persisted, order matters).
-  const [pinned, setPinned] = useState<View[]>(() => {
-    try {
-      const raw = JSON.parse(localStorage.getItem('bahasa-pinned') ?? '[]')
-      return Array.isArray(raw) ? raw.filter(isView) : []
-    } catch {
-      return []
-    }
-  })
+  // User-arranged tab order (persisted). Rearranged by hold-and-drag.
+  const [navOrder, setNavOrder] = useState<View[]>(loadNavOrder)
   const [theme, setTheme] = useState<'light' | 'dark'>(() =>
     document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
   )
@@ -67,41 +82,16 @@ export default function App() {
     setNavHasMore(el.scrollWidth - el.clientWidth - el.scrollLeft > 1)
   }
 
-  // Pinned tabs float to the front (in pin order); the rest keep their order.
-  const orderedNav = useMemo(() => {
-    const set = new Set(pinned)
-    const front = pinned
-      .map((v) => NAV_ITEMS.find((i) => i.view === v))
-      .filter((i): i is (typeof NAV_ITEMS)[number] => Boolean(i))
-    return [...front, ...NAV_ITEMS.filter((i) => !set.has(i.view))]
-  }, [pinned])
+  const orderedNav = useMemo(
+    () =>
+      navOrder
+        .map((v) => NAV_ITEMS.find((i) => i.view === v))
+        .filter((i): i is (typeof NAV_ITEMS)[number] => Boolean(i)),
+    [navOrder]
+  )
 
-  const togglePin = (v: View) =>
-    setPinned((p) => (p.includes(v) ? p.filter((x) => x !== v) : [...p, v]))
-
-  // Long-press (touch-hold or mouse-hold) toggles a tab's pinned state. A
-  // scroll drag moves the pointer past a threshold, which cancels the timer so
-  // it won't pin; small jitter is ignored.
-  const pressTimer = useRef<number>()
-  const didLongPress = useRef(false)
-  const pressStart = useRef<{ x: number; y: number } | null>(null)
-  const startPress = (v: View, e: React.PointerEvent) => {
-    didLongPress.current = false
-    pressStart.current = { x: e.clientX, y: e.clientY }
-    pressTimer.current = window.setTimeout(() => {
-      didLongPress.current = true
-      togglePin(v)
-    }, 500)
-  }
-  const onPressMove = (e: React.PointerEvent) => {
-    const s = pressStart.current
-    if (!s) return
-    if (Math.abs(e.clientX - s.x) > 10 || Math.abs(e.clientY - s.y) > 10) cancelPress()
-  }
-  const cancelPress = () => {
-    if (pressTimer.current) window.clearTimeout(pressTimer.current)
-    pressStart.current = null
-  }
+  // Hold a tab for 500ms to "lift" it, then drag left/right to rearrange.
+  const { dragging: dragView, wasDrag, pressProps } = useDragReorder(navRef, setNavOrder)
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -113,13 +103,14 @@ export default function App() {
   }, [view])
 
   useEffect(() => {
-    localStorage.setItem('bahasa-pinned', JSON.stringify(pinned))
-  }, [pinned])
+    localStorage.setItem('bahasa-nav-order', JSON.stringify(navOrder))
+    localStorage.removeItem('bahasa-pinned') // superseded by the full order
+  }, [navOrder])
 
   // Recompute the fade whenever the tab order changes.
   useEffect(() => {
     updateNavFade()
-  }, [pinned])
+  }, [navOrder])
 
   useEffect(() => {
     updateNavFade()
@@ -163,26 +154,17 @@ export default function App() {
             {orderedNav.map((item) => (
               <button
                 key={item.view}
-                className={`nav-btn ${view === item.view ? 'nav-btn-active' : ''}`}
-                title="Hold to pin / unpin"
-                onClick={(e) => {
-                  if (didLongPress.current) {
-                    e.preventDefault()
-                    return
-                  }
-                  navigate(item.view)
+                className={`nav-btn ${view === item.view ? 'nav-btn-active' : ''} ${
+                  dragView === item.view ? 'nav-btn-dragging' : ''
+                }`}
+                title="Hold, then drag to rearrange"
+                onClick={() => {
+                  if (!wasDrag()) navigate(item.view)
                 }}
-                onPointerDown={(e) => startPress(item.view, e)}
-                onPointerUp={cancelPress}
-                onPointerLeave={cancelPress}
-                onPointerCancel={cancelPress}
-                onPointerMove={onPressMove}
+                {...pressProps(item.view)}
               >
                 <span className="nav-emoji">{item.emoji}</span>
                 <span className="nav-label">{item.label}</span>
-                {pinned.includes(item.view) && (
-                  <span className="nav-pin" aria-hidden="true">📌</span>
-                )}
               </button>
             ))}
           </nav>
