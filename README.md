@@ -2,6 +2,12 @@
 
 An interactive web app for learning Bahasa Indonesia, built with React, TypeScript, and Vite.
 
+**🌐 Try it live: [pinardy.github.io/learn-bahasa-indonesia](https://pinardy.github.io/learn-bahasa-indonesia/)**
+
+<p align="center">
+  <img src="docs/screenshot.png" alt="Belajar! home screen — stats, progress bar, and module cards for Flashcards, Quiz, Sentence Builder, Grammar, Numbers & Time, Vocabulary, and News" width="500">
+</p>
+
 ## Features
 
 - **🃏 Flashcards** — flip cards to memorize words, filter by category, and mark each word as "known" or "still learning"
