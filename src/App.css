@@ -111,17 +111,22 @@
   color: var(--ink-soft);
   font-weight: 600;
   user-select: none;
+  -webkit-user-select: none;
+  /* Keep hold-to-drag from triggering the iOS callout. `manipulation` (not
+     pan-x) so the browser still sends cancelable touchmoves — the drag handler
+     preventDefaults them to stop the nav scrolling mid-drag. */
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
   transition: background 0.15s, color 0.15s;
 }
 
-/* Badge marking a pinned tab (pinned tabs float to the front of the nav). */
-.nav-pin {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  font-size: 0.6rem;
-  line-height: 1;
-  pointer-events: none;
+/* Tab "lifted" by hold-and-drag while being rearranged. */
+.nav-btn-dragging {
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: var(--cream);
+  z-index: 1;
+  cursor: grabbing;
 }
 
 .nav-btn:hover {
