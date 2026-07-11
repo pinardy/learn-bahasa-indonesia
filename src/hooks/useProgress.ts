@@ -55,14 +55,28 @@ export function useProgress() {
     }))
   }, [])
 
-  const recordQuizAnswer = useCallback((correct: boolean) => {
-    setProgress((p) => ({
-      ...p,
-      quizStats: {
+  // A quiz answer also counts as a spaced-repetition review of the word:
+  // wrong pulls it into the review rotation (back to box 1, marked
+  // "learning"); correct only advances words already scheduled — otherwise
+  // every quiz round would flood the due deck with random unstudied words.
+  const recordQuizAnswer = useCallback((correct: boolean, wordId?: string) => {
+    setProgress((p) => {
+      const quizStats = {
         correct: p.quizStats.correct + (correct ? 1 : 0),
         total: p.quizStats.total + 1,
-      },
-    }))
+      }
+      if (!wordId) return { ...p, quizStats }
+      if (correct) {
+        if (!p.srs[wordId]) return { ...p, quizStats }
+        return { ...p, quizStats, srs: { ...p.srs, [wordId]: schedule(p.srs[wordId], true) } }
+      }
+      return {
+        ...p,
+        quizStats,
+        wordStatus: { ...p.wordStatus, [wordId]: 'learning' },
+        srs: { ...p.srs, [wordId]: schedule(p.srs[wordId], false) },
+      }
+    })
   }, [])
 
   const recordGrammarAnswer = useCallback((correct: boolean) => {

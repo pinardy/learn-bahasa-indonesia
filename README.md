@@ -11,12 +11,12 @@ An interactive web app for learning Bahasa Indonesia, built with React, TypeScri
 ## Features
 
 - **🃏 Flashcards** — flip cards to memorize words, filter by category, and mark each word as "known" or "still learning"
-- **❓ Quiz** — 10-question multiple-choice rounds, testing both Indonesian → English and English → Indonesian
+- **❓ Quiz** — 10-question rounds in three modes: multiple choice (both Indonesian → English and English → Indonesian), typed recall (see the English, type the Indonesian — minor typos are forgiven), and listening (hear the word, choose its meaning)
 - **🧩 Sentence Builder** — arrange shuffled word tiles to translate English sentences into Indonesian
 - **📖 Vocabulary browser** — search and browse 240+ words across 20 categories (greetings, numbers, food, family, travel, verbs, adjectives, time, colors, body, animals, nature & weather, household, question words, around town, transportation, jobs, feelings, clothing, money & shopping)
 - **📰 News** — read real headlines from CNN Indonesia, Antara, CNBC Indonesia, Tempo, and Republika; tap any word for its English meaning, then reveal the full English translation to check your understanding
 - **📊 Progress tracking** — words known, quiz accuracy, and sentences solved are saved to localStorage
-- **⏰ Spaced repetition** — grading a flashcard schedules it on a Leitner-box interval (1 → 2 → 4 → 9 → 18 days); the home screen shows how many words are due and a "Due for review" deck resurfaces them right before you'd forget
+- **⏰ Spaced repetition** — grading a flashcard schedules it on a Leitner-box interval (1 → 2 → 4 → 9 → 18 days); the home screen shows how many words are due and a "Due for review" deck resurfaces them right before you'd forget. Quiz answers feed the same schedule: a miss sends the word back to box 1 and into the review rotation, a correct answer advances words already being reviewed
 - **🔊 Audio pronunciation** — tap the speaker on any word, flashcard, quiz answer, sentence, or news word to hear it spoken in Indonesian (browser-native text-to-speech; works offline)
 - **📱 Installable PWA** — add it to your phone's home screen; the whole app works offline, including previously loaded news and cached translations
 
