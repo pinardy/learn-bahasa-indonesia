@@ -8,7 +8,7 @@ import { useEnterKey } from '../hooks/useEnterKey'
 
 interface QuizProps {
   savedWords: Word[]
-  onAnswer: (correct: boolean) => void
+  onAnswer: (correct: boolean, wordId: string) => void
 }
 
 interface Question {
@@ -105,7 +105,7 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
     setSelected(option)
     const correct = mode === 'typed' ? gradeTyped(option) : option === question.answer
     if (correct) setScore((s) => s + 1)
-    onAnswer(correct)
+    onAnswer(correct, question.word.id)
   }
 
   const next = () => {
