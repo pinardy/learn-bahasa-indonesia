@@ -373,17 +373,45 @@
   color: var(--ink-soft);
 }
 
-.reset-btn {
-  display: block;
+.data-tools {
   margin: 36px auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.data-tools-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 18px;
+}
+
+.data-btn {
   background: none;
   border: none;
   color: var(--ink-soft);
   font-size: 0.85rem;
   text-decoration: underline;
+  cursor: pointer;
 }
 
-.reset-btn:hover {
+.data-btn:hover {
+  color: var(--red);
+}
+
+.data-btn-danger:hover {
+  color: var(--red);
+}
+
+.data-tools-msg {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.data-tools-msg.is-error {
   color: var(--red);
 }
 

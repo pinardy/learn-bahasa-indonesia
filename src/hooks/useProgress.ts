@@ -1,45 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { CategoryId, Progress, Word, WordStatus } from '../types'
 import { schedule } from '../srs'
-import { WORDS } from '../data/vocabulary'
-import { PATH_ORDER, UNIT_MASTERY } from '../data/path'
+import { DEFAULT_PROGRESS, normalizeProgress } from '../services/progressIO'
 
 const STORAGE_KEY = 'bahasa-learner-progress'
-
-const DEFAULT_PROGRESS: Progress = {
-  wordStatus: {},
-  quizStats: { correct: 0, total: 0 },
-  grammarStats: { correct: 0, total: 0 },
-  sentencesSolved: [],
-  savedWords: [],
-  srs: {},
-  unitsPassed: [],
-}
-
-// Checkpoint quizzes were added after the learning path: grandfather units
-// that were already complete under the old rule (70% of words known).
-function seedUnitsPassed(wordStatus: Record<string, WordStatus>): CategoryId[] {
-  return PATH_ORDER.filter((id) => {
-    const words = WORDS.filter((w) => w.category === id)
-    const known = words.filter((w) => wordStatus[w.id] === 'known').length
-    return known >= Math.ceil(words.length * UNIT_MASTERY)
-  })
-}
 
 function loadProgress(): Progress {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return DEFAULT_PROGRESS
-    const parsed = JSON.parse(raw) as Partial<Progress>
-    return {
-      wordStatus: parsed.wordStatus ?? {},
-      quizStats: parsed.quizStats ?? { correct: 0, total: 0 },
-      grammarStats: parsed.grammarStats ?? { correct: 0, total: 0 },
-      sentencesSolved: parsed.sentencesSolved ?? [],
-      savedWords: parsed.savedWords ?? [],
-      srs: parsed.srs ?? {},
-      unitsPassed: parsed.unitsPassed ?? seedUnitsPassed(parsed.wordStatus ?? {}),
-    }
+    return normalizeProgress(JSON.parse(raw))
   } catch {
     return DEFAULT_PROGRESS
   }
@@ -148,6 +118,12 @@ export function useProgress() {
     setProgress(DEFAULT_PROGRESS)
   }, [])
 
+  // Replace all progress wholesale (used by the import-from-file flow). The
+  // caller is expected to pass an already-normalized Progress.
+  const replaceProgress = useCallback((next: Progress) => {
+    setProgress(next)
+  }, [])
+
   return {
     progress,
     setWordStatus,
@@ -159,5 +135,6 @@ export function useProgress() {
     removeSavedWord,
     markUnitPassed,
     resetProgress,
+    replaceProgress,
   }
 }

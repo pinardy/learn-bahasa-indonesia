@@ -16,6 +16,7 @@ An interactive web app for learning Bahasa Indonesia, built with React, TypeScri
 - **📖 Vocabulary browser** — search and browse 240+ words across 20 categories (greetings, numbers, food, family, travel, verbs, adjectives, time, colors, body, animals, nature & weather, household, question words, around town, transportation, jobs, feelings, clothing, money & shopping)
 - **📰 News** — read real headlines from CNN Indonesia, Antara, CNBC Indonesia, Tempo, and Republika; tap any word for its English meaning, then reveal the full English translation to check your understanding
 - **📊 Progress tracking** — words known, quiz accuracy, and sentences solved are saved to localStorage
+- **💾 Backup & restore** — export all your progress (known words, SRS schedule, saved words, stats, unlocked units) to a JSON file from the home screen, and import it back on any device; an unrecognized file is rejected rather than overwriting your data
 - **🎯 Learning path** — a guided course through the vocabulary: units in pedagogical order on the home screen; master 70% of a unit's words, then pass its checkpoint quiz to unlock the next
 - **🗣️ Phrasebook & pronunciation** — survival phrases for real situations (restaurant, directions, shopping, emergencies…) plus a guide to the sounds that differ from English, all speakable
 - **🎤 Speaking practice** — say words and phrases aloud; browser speech recognition (Chrome/Android) checks your pronunciation

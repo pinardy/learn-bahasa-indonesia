@@ -1,6 +1,13 @@
+import { useRef, useState } from 'react'
 import type { CategoryId, Progress } from '../types'
 import { WORDS } from '../data/vocabulary'
 import { SENTENCES } from '../data/sentences'
+import { todayStr } from '../srs'
+import {
+  backupFilename,
+  deserializeProgress,
+  serializeProgress,
+} from '../services/progressIO'
 import { LearningPath } from './LearningPath'
 
 interface HomeProps {
@@ -11,6 +18,7 @@ interface HomeProps {
   onOpenUnit: (categoryId: CategoryId) => void
   onStartCheckpoint: (categoryId: CategoryId) => void
   onReset: () => void
+  onImport: (progress: Progress) => void
 }
 
 export function Home({
@@ -21,7 +29,37 @@ export function Home({
   onOpenUnit,
   onStartCheckpoint,
   onReset,
+  onImport,
 }: HomeProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [ioMessage, setIoMessage] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
+
+  const handleExport = () => {
+    const text = serializeProgress(progress, new Date().toISOString())
+    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = backupFilename(todayStr())
+    a.click()
+    URL.revokeObjectURL(url)
+    setIoMessage({ kind: 'ok', text: 'Progress exported.' })
+  }
+
+  const handleImportFile = async (file: File) => {
+    try {
+      const imported = deserializeProgress(await file.text())
+      if (
+        !window.confirm(
+          'Import this file? It will replace your current progress on this device.'
+        )
+      )
+        return
+      onImport(imported)
+      setIoMessage({ kind: 'ok', text: 'Progress imported.' })
+    } catch (e) {
+      setIoMessage({ kind: 'err', text: e instanceof Error ? e.message : 'Could not import file.' })
+    }
+  }
   const knownCount = Object.values(progress.wordStatus).filter((s) => s === 'known').length
   const learningCount = Object.values(progress.wordStatus).filter((s) => s === 'learning').length
   const { correct, total } = progress.quizStats
@@ -124,16 +162,49 @@ export function Home({
         ))}
       </div>
 
-      {(knownCount > 0 || total > 0 || grammar.total > 0 || progress.sentencesSolved.length > 0) && (
-        <button
-          className="reset-btn"
-          onClick={() => {
-            if (window.confirm('Reset all progress? This cannot be undone.')) onReset()
+      <div className="data-tools">
+        <div className="data-tools-actions">
+          <button className="data-btn" onClick={handleExport}>
+            ⬇️ Export progress
+          </button>
+          <button className="data-btn" onClick={() => fileInputRef.current?.click()}>
+            ⬆️ Import progress
+          </button>
+          {(knownCount > 0 ||
+            total > 0 ||
+            grammar.total > 0 ||
+            progress.sentencesSolved.length > 0) && (
+            <button
+              className="data-btn data-btn-danger"
+              onClick={() => {
+                if (window.confirm('Reset all progress? This cannot be undone.')) {
+                  onReset()
+                  setIoMessage(null)
+                }
+              }}
+            >
+              Reset progress
+            </button>
+          )}
+        </div>
+        {ioMessage && (
+          <p className={`data-tools-msg ${ioMessage.kind === 'err' ? 'is-error' : ''}`}>
+            {ioMessage.text}
+          </p>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json,.json"
+          hidden
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) handleImportFile(file)
+            // reset so selecting the same file again re-triggers onChange
+            e.target.value = ''
           }}
-        >
-          Reset progress
-        </button>
-      )}
+        />
+      </div>
     </div>
   )
 }
