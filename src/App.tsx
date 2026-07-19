@@ -140,6 +140,7 @@ export default function App() {
     removeSavedWord,
     markUnitPassed,
     resetProgress,
+    replaceProgress,
   } = useProgress()
 
   // navigate normally (resets any pending deck launch or checkpoint)
@@ -216,6 +217,7 @@ export default function App() {
             onOpenUnit={openUnit}
             onStartCheckpoint={setCheckpoint}
             onReset={resetProgress}
+            onImport={replaceProgress}
           />
         )}
         {view === 'flashcards' && (
