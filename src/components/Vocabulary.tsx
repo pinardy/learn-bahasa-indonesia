@@ -7,15 +7,30 @@ interface VocabularyProps {
   wordStatus: Record<string, WordStatus>
   savedWords: Word[]
   onRemoveSaved: (wordId: string) => void
+  onSaveWord: (word: Word) => void
 }
 
 const PAGE_SIZE = 30
 
-export function Vocabulary({ wordStatus, savedWords, onRemoveSaved }: VocabularyProps) {
+export function Vocabulary({ wordStatus, savedWords, onRemoveSaved, onSaveWord }: VocabularyProps) {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState<CategoryId | 'all'>('all')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [showTopBtn, setShowTopBtn] = useState(false)
+  const [adding, setAdding] = useState(false)
+  const [newIndonesian, setNewIndonesian] = useState('')
+  const [newEnglish, setNewEnglish] = useState('')
+
+  const addWord = () => {
+    const indonesian = newIndonesian.trim().toLowerCase()
+    const english = newEnglish.trim().toLowerCase()
+    if (!indonesian || !english) return
+    onSaveWord({ id: `saved-${indonesian}`, indonesian, english, category: 'saved' })
+    setNewIndonesian('')
+    setNewEnglish('')
+    setAdding(false)
+    setCategory('saved')
+  }
 
   useEffect(() => {
     setVisibleCount(PAGE_SIZE)
@@ -53,6 +68,51 @@ export function Vocabulary({ wordStatus, savedWords, onRemoveSaved }: Vocabulary
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
+
+      {adding ? (
+        <form
+          className="add-word-form"
+          onSubmit={(e) => {
+            e.preventDefault()
+            addWord()
+          }}
+        >
+          <input
+            className="typed-input"
+            placeholder="Indonesian word…"
+            value={newIndonesian}
+            onChange={(e) => setNewIndonesian(e.target.value)}
+            autoFocus
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+          />
+          <input
+            className="typed-input"
+            placeholder="English meaning…"
+            value={newEnglish}
+            onChange={(e) => setNewEnglish(e.target.value)}
+            autoComplete="off"
+          />
+          <div className="add-word-actions">
+            <button type="button" className="btn btn-ghost" onClick={() => setAdding(false)}>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={!newIndonesian.trim() || !newEnglish.trim()}
+            >
+              Save to ⭐ My Words
+            </button>
+          </div>
+        </form>
+      ) : (
+        <button className="btn btn-ghost add-word-toggle" onClick={() => setAdding(true)}>
+          ＋ Add your own word
+        </button>
+      )}
 
       <select
         className="filter-select"

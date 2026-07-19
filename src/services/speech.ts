@@ -25,6 +25,60 @@ function indonesianVoice(): SpeechSynthesisVoice | undefined {
   )
 }
 
+// ---- Speech recognition (speaking practice) ----
+
+type RecognitionCtor = new () => SpeechRecognitionLike
+interface SpeechRecognitionLike {
+  lang: string
+  interimResults: boolean
+  maxAlternatives: number
+  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null
+  onerror: ((event: { error: string }) => void) | null
+  onend: (() => void) | null
+  start: () => void
+  abort: () => void
+}
+
+function recognitionCtor(): RecognitionCtor | undefined {
+  const w = window as unknown as {
+    SpeechRecognition?: RecognitionCtor
+    webkitSpeechRecognition?: RecognitionCtor
+  }
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition
+}
+
+export function isRecognitionSupported(): boolean {
+  return typeof window !== 'undefined' && recognitionCtor() !== undefined
+}
+
+/**
+ * Listen once for Indonesian speech and resolve with the transcript.
+ * Rejects on mic errors, no-speech, or lack of browser support.
+ */
+export function listenOnce(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const Ctor = recognitionCtor()
+    if (!Ctor) return reject(new Error('unsupported'))
+    const recognition = new Ctor()
+    recognition.lang = 'id-ID'
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+    let settled = false
+    recognition.onresult = (event) => {
+      settled = true
+      resolve(event.results[0]?.[0]?.transcript ?? '')
+    }
+    recognition.onerror = (event) => {
+      settled = true
+      reject(new Error(event.error))
+    }
+    recognition.onend = () => {
+      if (!settled) reject(new Error('no-speech'))
+    }
+    recognition.start()
+  })
+}
+
 /** Speak Indonesian text aloud. Cancels any in-progress utterance first. */
 export function speak(text: string) {
   if (!isSpeechSupported()) return

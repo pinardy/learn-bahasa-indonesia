@@ -87,4 +87,6 @@ export interface Progress {
   savedWords: Word[]
   /** Per-word spaced-repetition schedule, keyed by word id */
   srs: Record<string, SrsCard>
+  /** Learning-path units whose checkpoint quiz has been passed */
+  unitsPassed: CategoryId[]
 }

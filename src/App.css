@@ -1428,6 +1428,97 @@
   cursor: default;
 }
 
+.path-unit-ready {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 2px var(--amber-soft);
+}
+
+.path-unit-ready .path-progress {
+  color: var(--amber);
+  font-weight: 700;
+}
+
+/* ===== Checkpoint quiz ===== */
+.checkpoint-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.checkpoint-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+/* ===== Speaking practice ===== */
+.speaking-target {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.speaking-meaning {
+  color: var(--ink-soft);
+  margin: 4px 0 0;
+}
+
+.mic-btn {
+  background: var(--green);
+}
+
+.mic-btn:hover {
+  background: #14603b;
+}
+
+.mic-listening {
+  background: var(--red);
+  animation: mic-pulse 1s ease infinite;
+}
+
+@keyframes mic-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.speaking-status {
+  text-align: center;
+  color: var(--ink-soft);
+  min-height: 24px;
+  margin: 12px 0 4px;
+}
+
+/* ===== Add your own word ===== */
+.add-word-toggle {
+  margin-bottom: 14px;
+}
+
+.add-word-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.add-word-form .typed-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.add-word-actions {
+  display: flex;
+  gap: 10px;
+  flex-basis: 100%;
+  justify-content: flex-end;
+}
+
 .path-emoji {
   font-size: 1.4rem;
 }

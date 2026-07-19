@@ -9,6 +9,7 @@ interface HomeProps {
   onNavigate: (view: string) => void
   onStartReview: () => void
   onOpenUnit: (categoryId: CategoryId) => void
+  onStartCheckpoint: (categoryId: CategoryId) => void
   onReset: () => void
 }
 
@@ -18,6 +19,7 @@ export function Home({
   onNavigate,
   onStartReview,
   onOpenUnit,
+  onStartCheckpoint,
   onReset,
 }: HomeProps) {
   const knownCount = Object.values(progress.wordStatus).filter((s) => s === 'known').length
@@ -63,7 +65,12 @@ export function Home({
         </button>
       )}
 
-      <LearningPath wordStatus={progress.wordStatus} onOpenUnit={onOpenUnit} />
+      <LearningPath
+        wordStatus={progress.wordStatus}
+        unitsPassed={progress.unitsPassed}
+        onOpenUnit={onOpenUnit}
+        onStartCheckpoint={onStartCheckpoint}
+      />
 
       <div className="stats-grid">
         <div className="stat-card">

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { Progress, Word, WordStatus } from '../types'
+import type { CategoryId, Progress, Word, WordStatus } from '../types'
 import { schedule } from '../srs'
+import { WORDS } from '../data/vocabulary'
+import { PATH_ORDER, UNIT_MASTERY } from '../data/path'
 
 const STORAGE_KEY = 'bahasa-learner-progress'
 
@@ -11,6 +13,17 @@ const DEFAULT_PROGRESS: Progress = {
   sentencesSolved: [],
   savedWords: [],
   srs: {},
+  unitsPassed: [],
+}
+
+// Checkpoint quizzes were added after the learning path: grandfather units
+// that were already complete under the old rule (70% of words known).
+function seedUnitsPassed(wordStatus: Record<string, WordStatus>): CategoryId[] {
+  return PATH_ORDER.filter((id) => {
+    const words = WORDS.filter((w) => w.category === id)
+    const known = words.filter((w) => wordStatus[w.id] === 'known').length
+    return known >= Math.ceil(words.length * UNIT_MASTERY)
+  })
 }
 
 function loadProgress(): Progress {
@@ -25,6 +38,7 @@ function loadProgress(): Progress {
       sentencesSolved: parsed.sentencesSolved ?? [],
       savedWords: parsed.savedWords ?? [],
       srs: parsed.srs ?? {},
+      unitsPassed: parsed.unitsPassed ?? seedUnitsPassed(parsed.wordStatus ?? {}),
     }
   } catch {
     return DEFAULT_PROGRESS
@@ -122,6 +136,14 @@ export function useProgress() {
     })
   }, [])
 
+  const markUnitPassed = useCallback((categoryId: CategoryId) => {
+    setProgress((p) =>
+      p.unitsPassed.includes(categoryId)
+        ? p
+        : { ...p, unitsPassed: [...p.unitsPassed, categoryId] }
+    )
+  }, [])
+
   const resetProgress = useCallback(() => {
     setProgress(DEFAULT_PROGRESS)
   }, [])
@@ -135,6 +157,7 @@ export function useProgress() {
     markSentenceSolved,
     saveWord,
     removeSavedWord,
+    markUnitPassed,
     resetProgress,
   }
 }

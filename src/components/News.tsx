@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { NewsArticle, Word, WordStatus } from '../types'
 import { fetchNews, NEWS_SOURCES, SAMPLE_ARTICLES, type NewsSource } from '../services/news'
+import { STORIES } from '../data/stories'
 import { translateIdToEn } from '../services/translate'
 import { WORDS } from '../data/vocabulary'
 import { SpeakButton } from './SpeakButton'
@@ -86,6 +87,7 @@ function formatDate(iso?: string): string | null {
 const PAGE_SIZE = 10
 
 export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
+  const [readingMode, setReadingMode] = useState<'news' | 'stories'>('news')
   const [source, setSource] = useState<NewsSource>(NEWS_SOURCES[0])
   const [articles, setArticles] = useState<NewsArticle[]>([])
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -216,10 +218,12 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
   // Memoized per article; only recomputes when the article list or your vocabulary
   // changes, not on every expand/lookup/translation re-render. Articles with no
   // familiar-word data are absent from the map (no badge), so it isn't 0% for everyone.
+  const displayed = readingMode === 'stories' ? STORIES : articles
+
   const readabilityByArticle = useMemo(() => {
     const scores = new Map<string, number>()
     if (statusByWord.size === 0) return scores
-    for (const article of articles) {
+    for (const article of displayed) {
       const tokens = `${article.title} ${article.snippet}`
         .split(/\s+/)
         .map((t) => cleanWord(t).toLowerCase())
@@ -229,7 +233,7 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
       scores.set(article.id, Math.round((familiar / tokens.length) * 100))
     }
     return scores
-  }, [articles, statusByWord])
+  }, [displayed, statusByWord])
 
   const renderTappableText = (article: NewsArticle, text: string) =>
     text.split(/(\s+)/).map((token, i) => {
@@ -252,16 +256,33 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
   return (
     <div className="news">
       <div className="category-pills">
-        {NEWS_SOURCES.map((s) => (
-          <button
-            key={s.id}
-            className={`pill ${source.id === s.id ? 'pill-active' : ''}`}
-            onClick={() => setSource(s)}
-          >
-            {s.emoji} {s.name}
-          </button>
-        ))}
+        <button
+          className={`pill ${readingMode === 'news' ? 'pill-active' : ''}`}
+          onClick={() => setReadingMode('news')}
+        >
+          📰 Live news
+        </button>
+        <button
+          className={`pill ${readingMode === 'stories' ? 'pill-active' : ''}`}
+          onClick={() => setReadingMode('stories')}
+        >
+          📖 Beginner stories
+        </button>
       </div>
+
+      {readingMode === 'news' && (
+        <div className="category-pills">
+          {NEWS_SOURCES.map((s) => (
+            <button
+              key={s.id}
+              className={`pill ${source.id === s.id ? 'pill-active' : ''}`}
+              onClick={() => setSource(s)}
+            >
+              {s.emoji} {s.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       <p className="news-tip">
         💡 Read the Indonesian first, tap any word for its meaning, then reveal the English
@@ -271,36 +292,38 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
         familiar its words are to you — a higher % is easier to read.
       </p>
 
-      <div className="news-toolbar">
-        <span className="news-toolbar-info">
-          {source.emoji} {source.name}
-          {!loading && !offline && ` · ${articles.length} articles`}
-        </span>
-        <button
-          className={`icon-btn ${loading ? 'icon-btn-spinning' : ''}`}
-          onClick={() => void load(source)}
-          disabled={loading}
-          aria-label="Refresh news"
-          title="Refresh news"
-        >
-          ↻
-        </button>
-      </div>
+      {readingMode === 'news' && (
+        <div className="news-toolbar">
+          <span className="news-toolbar-info">
+            {source.emoji} {source.name}
+            {!loading && !offline && ` · ${articles.length} articles`}
+          </span>
+          <button
+            className={`icon-btn ${loading ? 'icon-btn-spinning' : ''}`}
+            onClick={() => void load(source)}
+            disabled={loading}
+            aria-label="Refresh news"
+            title="Refresh news"
+          >
+            ↻
+          </button>
+        </div>
+      )}
 
-      {offline && (
+      {readingMode === 'news' && offline && (
         <div className="news-offline">
           Couldn’t reach the news service — showing practice articles instead. Use ↻ Refresh to
           try again.
         </div>
       )}
 
-      {loading ? (
+      {readingMode === 'news' && loading ? (
         <div className="news-loading" role="status" aria-label="Loading news">
           <span className="spinner" />
         </div>
       ) : (
         <ul className="news-list">
-          {articles.slice(0, visibleCount).map((article) => {
+          {displayed.slice(0, readingMode === 'stories' ? displayed.length : visibleCount).map((article) => {
             const expanded = expandedId === article.id
             const tx = translations[article.id]
             const activeLookup = lookup?.articleId === article.id ? lookup : null
@@ -323,7 +346,12 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
                           📊 {score}% familiar
                         </span>
                       )}
-                      {formatDate(article.date) ?? (article.sampleEnglish ? 'Practice article' : '')}
+                      {formatDate(article.date) ??
+                        (readingMode === 'stories'
+                          ? 'Beginner story'
+                          : article.sampleEnglish
+                            ? 'Practice article'
+                            : '')}
                       <span className="news-expand-hint">{expanded ? '▲ close' : '▼ read'}</span>
                     </span>
                   </span>
@@ -378,14 +406,16 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
                       </button>
                     )}
 
-                    <a
-                      className="news-link"
-                      href={article.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Read full article on {source.name} ↗
-                    </a>
+                    {article.link && (
+                      <a
+                        className="news-link"
+                        href={article.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Read full article on {source.name} ↗
+                      </a>
+                    )}
                   </div>
                 )}
               </li>
@@ -394,7 +424,7 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
         </ul>
       )}
 
-      {!loading && articles.length > visibleCount && (
+      {readingMode === 'news' && !loading && articles.length > visibleCount && (
         <button
           className="btn btn-ghost show-more"
           onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}

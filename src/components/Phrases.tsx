@@ -2,8 +2,17 @@ import { useState } from 'react'
 import { SCENARIOS } from '../data/phrases'
 import { SOUNDS } from '../data/pronunciation'
 import { SpeakButton } from './SpeakButton'
+import { PhrasePractice } from './PhrasePractice'
+import { SpeakingPractice } from './SpeakingPractice'
 
-type PhrasesMode = 'phrasebook' | 'sounds'
+type PhrasesMode = 'phrasebook' | 'practice' | 'speaking' | 'sounds'
+
+const MODES: { id: PhrasesMode; label: string }[] = [
+  { id: 'phrasebook', label: '💬 Phrasebook' },
+  { id: 'practice', label: '✏️ Practice' },
+  { id: 'speaking', label: '🎤 Speaking' },
+  { id: 'sounds', label: '🔤 Pronunciation' },
+]
 
 export function Phrases() {
   const [mode, setMode] = useState<PhrasesMode>('phrasebook')
@@ -14,21 +23,21 @@ export function Phrases() {
   return (
     <div className="phrases">
       <div className="category-pills">
-        <button
-          className={`pill ${mode === 'phrasebook' ? 'pill-active' : ''}`}
-          onClick={() => setMode('phrasebook')}
-        >
-          💬 Phrasebook
-        </button>
-        <button
-          className={`pill ${mode === 'sounds' ? 'pill-active' : ''}`}
-          onClick={() => setMode('sounds')}
-        >
-          🔤 Pronunciation
-        </button>
+        {MODES.map((m) => (
+          <button
+            key={m.id}
+            className={`pill ${mode === m.id ? 'pill-active' : ''}`}
+            onClick={() => setMode(m.id)}
+          >
+            {m.label}
+          </button>
+        ))}
       </div>
 
-      {mode === 'phrasebook' ? (
+      {mode === 'practice' && <PhrasePractice />}
+      {mode === 'speaking' && <SpeakingPractice />}
+
+      {mode === 'phrasebook' && (
         <>
           <p className="news-tip">
             💡 Ready-to-use phrases for real situations — tap 🔊 to hear each one spoken.
@@ -61,7 +70,9 @@ export function Phrases() {
             ))}
           </ul>
         </>
-      ) : (
+      )}
+
+      {mode === 'sounds' && (
         <>
           <p className="news-tip">
             💡 Indonesian is phonetic — words sound exactly as they're written, and stress usually

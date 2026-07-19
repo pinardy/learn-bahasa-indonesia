@@ -9,6 +9,7 @@ const baseProgress = (): Progress => ({
   sentencesSolved: [],
   savedWords: [],
   srs: { tracked: { box: 3, due: '2026-07-11', reps: 4 } },
+  unitsPassed: [],
 })
 
 beforeEach(() => {

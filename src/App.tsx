@@ -5,6 +5,7 @@ import { useDragReorder } from './hooks/useDragReorder'
 import { Home } from './components/Home'
 import { Flashcards, type DeckFilter } from './components/Flashcards'
 import { Phrases } from './components/Phrases'
+import { CheckpointQuiz } from './components/CheckpointQuiz'
 import { Quiz } from './components/Quiz'
 import { SentenceBuilder } from './components/SentenceBuilder'
 import { Vocabulary } from './components/Vocabulary'
@@ -70,6 +71,8 @@ export default function App() {
   // A deck to open Flashcards with (review from the home banner, or a
   // category from the learning path); cleared on normal navigation.
   const [deckLaunch, setDeckLaunch] = useState<DeckFilter | null>(null)
+  // When set, a learning-path checkpoint quiz overlays the current view.
+  const [checkpoint, setCheckpoint] = useState<CategoryId | null>(null)
 
   // User-arranged tab order (persisted). Rearranged by hold-and-drag.
   const [navOrder, setNavOrder] = useState<View[]>(loadNavOrder)
@@ -135,12 +138,14 @@ export default function App() {
     markSentenceSolved,
     saveWord,
     removeSavedWord,
+    markUnitPassed,
     resetProgress,
   } = useProgress()
 
-  // navigate normally (resets any pending deck launch)
+  // navigate normally (resets any pending deck launch or checkpoint)
   const navigate = (v: View) => {
     setDeckLaunch(null)
+    setCheckpoint(null)
     setView(v)
   }
 
@@ -192,13 +197,24 @@ export default function App() {
       </header>
 
       <main className="app-main">
-        {view === 'home' && (
+        {checkpoint && (
+          <CheckpointQuiz
+            categoryId={checkpoint}
+            onPass={() => {
+              markUnitPassed(checkpoint)
+              navigate('home')
+            }}
+            onClose={() => navigate('home')}
+          />
+        )}
+        {!checkpoint && view === 'home' && (
           <Home
             progress={progress}
             dueCount={dueCount(progress.srs)}
             onNavigate={(v) => navigate(v as View)}
             onStartReview={startReview}
             onOpenUnit={openUnit}
+            onStartCheckpoint={setCheckpoint}
             onReset={resetProgress}
           />
         )}
@@ -223,6 +239,7 @@ export default function App() {
             wordStatus={progress.wordStatus}
             savedWords={progress.savedWords}
             onRemoveSaved={removeSavedWord}
+            onSaveWord={saveWord}
           />
         )}
         {view === 'news' && (
