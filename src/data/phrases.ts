@@ -105,6 +105,20 @@ export const SCENARIOS: Scenario[] = [
       { indonesian: 'Berapa lama perjalanannya?', english: 'How long is the trip?' },
       { indonesian: 'Jam berapa berangkat?', english: 'What time does it leave?' },
       { indonesian: 'Satu tiket ke Bandung', english: 'One ticket to Bandung' },
+      // on foot
+      { indonesian: 'Apakah bisa jalan kaki ke sana?', english: 'Can I walk there?' },
+      { indonesian: 'Berapa jauh dari sini?', english: 'How far is it from here?' },
+      { indonesian: 'Lewat sini, ya?', english: 'Is it this way?' },
+      { indonesian: 'Di mana saya bisa menyeberang?', english: 'Where can I cross the street?' },
+      { indonesian: 'Di seberang jalan', english: 'Across the street' },
+      // behind the wheel
+      { indonesian: 'Di mana bisa parkir?', english: 'Where can I park?' },
+      { indonesian: 'Isi bensin penuh, ya', english: 'Fill up the tank, please' },
+      { indonesian: 'Putar balik', english: 'Make a U-turn' },
+      { indonesian: 'Terus saja sampai lampu merah', english: 'Keep going until the traffic light' },
+      { indonesian: 'Di perempatan, belok kiri', english: 'At the intersection, turn left' },
+      { indonesian: 'Ada jalan tol?', english: 'Is there a toll road?' },
+      { indonesian: 'Macet sekali!', english: 'The traffic is so bad!' },
     ],
   },
   {
