@@ -34,17 +34,18 @@ export function Phrases() {
             💡 Ready-to-use phrases for real situations — tap 🔊 to hear each one spoken.
           </p>
 
-          <div className="category-pills">
+          <select
+            className="filter-select"
+            value={scenarioId}
+            onChange={(e) => setScenarioId(e.target.value)}
+            aria-label="Choose a scenario"
+          >
             {SCENARIOS.map((s) => (
-              <button
-                key={s.id}
-                className={`pill ${scenarioId === s.id ? 'pill-active' : ''}`}
-                onClick={() => setScenarioId(s.id)}
-              >
-                {s.emoji} {s.name}
-              </button>
+              <option key={s.id} value={s.id}>
+                {s.emoji} {s.name} ({s.phrases.length})
+              </option>
             ))}
-          </div>
+          </select>
 
           <ul className="vocab-list">
             {scenario.phrases.map((p) => (
