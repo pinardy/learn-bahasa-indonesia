@@ -1,16 +1,25 @@
-import type { Progress } from '../types'
+import type { CategoryId, Progress } from '../types'
 import { WORDS } from '../data/vocabulary'
 import { SENTENCES } from '../data/sentences'
+import { LearningPath } from './LearningPath'
 
 interface HomeProps {
   progress: Progress
   dueCount: number
   onNavigate: (view: string) => void
   onStartReview: () => void
+  onOpenUnit: (categoryId: CategoryId) => void
   onReset: () => void
 }
 
-export function Home({ progress, dueCount, onNavigate, onStartReview, onReset }: HomeProps) {
+export function Home({
+  progress,
+  dueCount,
+  onNavigate,
+  onStartReview,
+  onOpenUnit,
+  onReset,
+}: HomeProps) {
   const knownCount = Object.values(progress.wordStatus).filter((s) => s === 'known').length
   const learningCount = Object.values(progress.wordStatus).filter((s) => s === 'learning').length
   const { correct, total } = progress.quizStats
@@ -25,6 +34,7 @@ export function Home({ progress, dueCount, onNavigate, onStartReview, onReset }:
     { view: 'sentences', emoji: '🧩', title: 'Sentence Builder', desc: 'Arrange words into sentences' },
     { view: 'grammar', emoji: '📝', title: 'Grammar', desc: 'Fill in the blank, learn the rules' },
     { view: 'numbers', emoji: '🔢', title: 'Numbers & Time', desc: 'Practice numbers and telling time' },
+    { view: 'phrases', emoji: '🗣️', title: 'Phrases', desc: 'Survival phrases and pronunciation' },
     { view: 'vocabulary', emoji: '📖', title: 'Vocabulary', desc: 'Browse and search all words' },
     { view: 'news', emoji: '📰', title: 'News', desc: 'Read real Indonesian news bilingually' },
   ]
@@ -52,6 +62,8 @@ export function Home({ progress, dueCount, onNavigate, onStartReview, onReset }:
           <span className="review-banner-go">Review →</span>
         </button>
       )}
+
+      <LearningPath wordStatus={progress.wordStatus} onOpenUnit={onOpenUnit} />
 
       <div className="stats-grid">
         <div className="stat-card">

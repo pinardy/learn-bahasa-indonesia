@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { CategoryId } from './types'
 import { useProgress } from './hooks/useProgress'
 import { useDragReorder } from './hooks/useDragReorder'
 import { Home } from './components/Home'
-import { Flashcards } from './components/Flashcards'
+import { Flashcards, type DeckFilter } from './components/Flashcards'
+import { Phrases } from './components/Phrases'
 import { Quiz } from './components/Quiz'
 import { SentenceBuilder } from './components/SentenceBuilder'
 import { Vocabulary } from './components/Vocabulary'
@@ -19,6 +21,7 @@ type View =
   | 'sentences'
   | 'grammar'
   | 'numbers'
+  | 'phrases'
   | 'vocabulary'
   | 'news'
 
@@ -29,6 +32,7 @@ const NAV_ITEMS: { view: View; label: string; emoji: string }[] = [
   { view: 'sentences', label: 'Sentences', emoji: '🧩' },
   { view: 'grammar', label: 'Grammar', emoji: '📝' },
   { view: 'numbers', label: 'Numbers', emoji: '🔢' },
+  { view: 'phrases', label: 'Phrases', emoji: '🗣️' },
   { view: 'vocabulary', label: 'Vocabulary', emoji: '📖' },
   { view: 'news', label: 'News', emoji: '📰' },
 ]
@@ -63,7 +67,9 @@ export default function App() {
     const saved = localStorage.getItem('bahasa-view')
     return isView(saved) ? saved : 'home'
   })
-  const [startInReview, setStartInReview] = useState(false)
+  // A deck to open Flashcards with (review from the home banner, or a
+  // category from the learning path); cleared on normal navigation.
+  const [deckLaunch, setDeckLaunch] = useState<DeckFilter | null>(null)
 
   // User-arranged tab order (persisted). Rearranged by hold-and-drag.
   const [navOrder, setNavOrder] = useState<View[]>(loadNavOrder)
@@ -132,14 +138,19 @@ export default function App() {
     resetProgress,
   } = useProgress()
 
-  // navigate normally (resets any pending review launch)
+  // navigate normally (resets any pending deck launch)
   const navigate = (v: View) => {
-    setStartInReview(false)
+    setDeckLaunch(null)
     setView(v)
   }
 
   const startReview = () => {
-    setStartInReview(true)
+    setDeckLaunch('review')
+    setView('flashcards')
+  }
+
+  const openUnit = (categoryId: CategoryId) => {
+    setDeckLaunch(categoryId)
     setView('flashcards')
   }
 
@@ -187,6 +198,7 @@ export default function App() {
             dueCount={dueCount(progress.srs)}
             onNavigate={(v) => navigate(v as View)}
             onStartReview={startReview}
+            onOpenUnit={openUnit}
             onReset={resetProgress}
           />
         )}
@@ -195,10 +207,11 @@ export default function App() {
             wordStatus={progress.wordStatus}
             savedWords={progress.savedWords}
             srs={progress.srs}
-            startInReview={startInReview}
+            initialDeck={deckLaunch ?? undefined}
             onReview={reviewWord}
           />
         )}
+        {view === 'phrases' && <Phrases />}
         {view === 'quiz' && <Quiz savedWords={progress.savedWords} onAnswer={recordQuizAnswer} />}
         {view === 'sentences' && (
           <SentenceBuilder solved={progress.sentencesSolved} onSolved={markSentenceSolved} />

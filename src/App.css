@@ -1364,6 +1364,149 @@
   transform: scale(0.94);
 }
 
+/* ===== Learning path ===== */
+.path-section {
+  margin-bottom: 26px;
+}
+
+.path-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.path-header h2 {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.path-count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.path-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+
+.path-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 118px;
+  flex-shrink: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 10px;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.path-unit:hover:not(:disabled) {
+  border-color: var(--red);
+  transform: translateY(-1px);
+}
+
+.path-unit-current {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px var(--red-soft);
+}
+
+.path-unit-done {
+  border-color: var(--green);
+}
+
+.path-unit-locked {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.path-emoji {
+  font-size: 1.4rem;
+}
+
+.path-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.path-progress {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.path-unit-done .path-progress {
+  color: var(--green);
+}
+
+.path-hint {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin: 6px 0 0;
+}
+
+/* ===== Pronunciation guide ===== */
+.sound-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sound-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.sound-letters {
+  min-width: 96px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--red);
+  flex-shrink: 0;
+}
+
+.sound-desc {
+  flex: 1;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+.sound-example {
+  white-space: nowrap;
+  font-size: 0.92rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .sound-row {
+    flex-wrap: wrap;
+    gap: 4px 14px;
+  }
+
+  .sound-desc {
+    flex-basis: 100%;
+    order: 3;
+  }
+}
+
 /* ===== Category dropdown ===== */
 .filter-select {
   display: block;
@@ -1509,7 +1652,7 @@
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .nav-label {
     display: none;
   }

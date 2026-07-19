@@ -5,13 +5,14 @@ import { shuffle } from '../utils'
 import { dueWords } from '../srs'
 import { SpeakButton } from './SpeakButton'
 
-type DeckFilter = CategoryId | 'all' | 'review'
+export type DeckFilter = CategoryId | 'all' | 'review'
 
 interface FlashcardsProps {
   wordStatus: Record<string, WordStatus>
   savedWords: Word[]
   srs: Record<string, SrsCard>
-  startInReview?: boolean
+  /** Deck to open with (e.g. 'review' from the home banner, a category from the learning path) */
+  initialDeck?: DeckFilter
   onReview: (wordId: string, remembered: boolean) => void
 }
 
@@ -19,10 +20,10 @@ export function Flashcards({
   wordStatus,
   savedWords,
   srs,
-  startInReview,
+  initialDeck,
   onReview,
 }: FlashcardsProps) {
-  const [category, setCategory] = useState<DeckFilter>(startInReview ? 'review' : 'all')
+  const [category, setCategory] = useState<DeckFilter>(initialDeck ?? 'all')
   const [deckSeed, setDeckSeed] = useState(0)
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
