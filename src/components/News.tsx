@@ -211,19 +211,25 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
     })
   }
 
-  // Share of an article's words that are in your vocabulary (known + learning +
-  // saved), as a rough readability estimate. Consistent with the word highlighting.
-  // Returns null until you have some vocabulary, so it isn't 0% for everyone.
-  const readabilityFor = (article: NewsArticle): number | null => {
-    if (statusByWord.size === 0) return null
-    const tokens = `${article.title} ${article.snippet}`
-      .split(/\s+/)
-      .map((t) => cleanWord(t).toLowerCase())
-      .filter((t) => /[a-z]/.test(t))
-    if (tokens.length === 0) return null
-    const familiar = tokens.filter((t) => statusByWord.has(t) || COMMON_WORDS.has(t)).length
-    return Math.round((familiar / tokens.length) * 100)
-  }
+  // Share of each article's words that are in your vocabulary (known + learning +
+  // saved), as a rough readability estimate — consistent with the word highlighting.
+  // Memoized per article; only recomputes when the article list or your vocabulary
+  // changes, not on every expand/lookup/translation re-render. Articles with no
+  // familiar-word data are absent from the map (no badge), so it isn't 0% for everyone.
+  const readabilityByArticle = useMemo(() => {
+    const scores = new Map<string, number>()
+    if (statusByWord.size === 0) return scores
+    for (const article of articles) {
+      const tokens = `${article.title} ${article.snippet}`
+        .split(/\s+/)
+        .map((t) => cleanWord(t).toLowerCase())
+        .filter((t) => /[a-z]/.test(t))
+      if (tokens.length === 0) continue
+      const familiar = tokens.filter((t) => statusByWord.has(t) || COMMON_WORDS.has(t)).length
+      scores.set(article.id, Math.round((familiar / tokens.length) * 100))
+    }
+    return scores
+  }, [articles, statusByWord])
 
   const renderTappableText = (article: NewsArticle, text: string) =>
     text.split(/(\s+)/).map((token, i) => {
@@ -298,7 +304,7 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
             const expanded = expandedId === article.id
             const tx = translations[article.id]
             const activeLookup = lookup?.articleId === article.id ? lookup : null
-            const score = readabilityFor(article)
+            const score = readabilityByArticle.get(article.id) ?? null
             // real news is dense, so a learner's coverage sits low; calibrate the
             // colour scale to that range rather than to an idealised 60/30 split
             const band = score === null ? '' : score >= 45 ? 'high' : score >= 20 ? 'mid' : 'low'
