@@ -230,7 +230,9 @@ export default function App() {
           />
         )}
         {view === 'phrases' && <Phrases />}
-        {view === 'quiz' && <Quiz savedWords={progress.savedWords} onAnswer={recordQuizAnswer} />}
+        {view === 'quiz' && (
+          <Quiz savedWords={progress.savedWords} srs={progress.srs} onAnswer={recordQuizAnswer} />
+        )}
         {view === 'sentences' && (
           <SentenceBuilder solved={progress.sentencesSolved} onSolved={markSentenceSolved} />
         )}
