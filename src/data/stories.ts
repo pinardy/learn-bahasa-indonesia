@@ -66,4 +66,76 @@ export const STORIES: NewsArticle[] = [
         'Near my office there is a small food stall. Every midday, I eat there. Bu Tini, the owner of the stall, cooks very delicious fried chicken. Today I ordered fried chicken, vegetables, and sweet iced tea. Everything was fifteen thousand rupiah — very cheap! "Thank you, ma\'am," I said. "You\'re welcome. See you tomorrow!" said Bu Tini.',
     },
   },
+  {
+    id: 'story-6',
+    title: 'Belajar bahasa Indonesia',
+    snippet:
+      'Saya belajar bahasa Indonesia setiap hari. Pagi ini saya belajar sepuluh kata baru. Bahasa Indonesia tidak terlalu sulit, tetapi saya masih sering lupa. Teman saya, Budi, membantu saya. Dia berkata, “Pelan-pelan saja. Kamu pasti bisa!” Sekarang saya bisa memesan makanan dan bertanya arah. Saya senang sekali.',
+    link: '',
+    sampleEnglish: {
+      title: 'Learning Indonesian',
+      snippet:
+        'I study Indonesian every day. This morning I learned ten new words. Indonesian is not too difficult, but I still often forget. My friend, Budi, helps me. He said, "Just take it slow. You can definitely do it!" Now I can order food and ask for directions. I am very happy.',
+    },
+  },
+  {
+    id: 'story-7',
+    title: 'Hari hujan',
+    snippet:
+      'Hari ini hujan sejak pagi. Saya tidak bisa pergi ke luar. Saya tinggal di rumah dan minum teh panas. Saya membaca buku dan mendengar musik. Kucing saya tidur di sofa. Sore hari, hujan berhenti dan matahari keluar. Saya pergi ke taman dengan teman saya. Udara segar sekali setelah hujan.',
+    link: '',
+    sampleEnglish: {
+      title: 'A rainy day',
+      snippet:
+        'Today it has rained since morning. I could not go outside. I stayed at home and drank hot tea. I read a book and listened to music. My cat slept on the sofa. In the afternoon, the rain stopped and the sun came out. I went to the park with my friend. The air was very fresh after the rain.',
+    },
+  },
+  {
+    id: 'story-8',
+    title: 'Naik ojek online',
+    snippet:
+      'Saya harus ke kantor, tetapi hari sudah siang dan jalan macet. Saya memesan ojek online lewat aplikasi. Lima menit kemudian, pengemudi datang. “Selamat pagi, Pak. Ke Jalan Sudirman, ya?” kata saya. Dia memberi saya helm. Kami lewat jalan kecil supaya cepat. Perjalanan hanya lima belas menit. Saya bayar pakai aplikasi. “Terima kasih, Pak!”',
+    link: '',
+    sampleEnglish: {
+      title: 'Taking an online ojek',
+      snippet:
+        'I had to get to the office, but it was already midday and the roads were jammed. I ordered an online motorbike taxi through the app. Five minutes later, the driver arrived. "Good morning, sir. To Jalan Sudirman, right?" I said. He gave me a helmet. We took small roads to be quick. The trip was only fifteen minutes. I paid with the app. "Thank you, sir!"',
+    },
+  },
+  {
+    id: 'story-9',
+    title: 'Ulang tahun teman saya',
+    snippet:
+      'Hari ini teman saya, Dewi, berulang tahun. Dia dua puluh lima tahun. Kami membuat pesta kecil di rumahnya. Saya membeli kue cokelat dan bunga. Teman-teman datang membawa makanan. Kami makan, bernyanyi, dan tertawa bersama. Dewi sangat senang. “Terima kasih, teman-teman,” katanya. Malam itu indah sekali.',
+    link: '',
+    sampleEnglish: {
+      title: "My friend's birthday",
+      snippet:
+        'Today my friend, Dewi, had her birthday. She is twenty-five years old. We threw a small party at her house. I bought a chocolate cake and flowers. Friends came bringing food. We ate, sang, and laughed together. Dewi was very happy. "Thank you, everyone," she said. That night was very lovely.',
+    },
+  },
+  {
+    id: 'story-10',
+    title: 'Ke dokter',
+    snippet:
+      'Kemarin saya kurang enak badan. Kepala saya sakit dan saya demam. Pagi ini saya pergi ke dokter. Dokter bertanya, “Sudah berapa lama sakit?” Saya berkata, “Dua hari.” Dia memberi saya obat dan berkata, “Minum obat ini tiga kali sehari, dan banyak istirahat.” Saya membeli obat di apotek. Sekarang saya sudah lebih baik.',
+    link: '',
+    sampleEnglish: {
+      title: 'Going to the doctor',
+      snippet:
+        'Yesterday I was not feeling well. My head hurt and I had a fever. This morning I went to the doctor. The doctor asked, "How long have you been sick?" I said, "Two days." He gave me medicine and said, "Take this medicine three times a day, and rest a lot." I bought the medicine at the pharmacy. Now I am already better.',
+    },
+  },
+  {
+    id: 'story-11',
+    title: 'Akhir pekan di rumah',
+    snippet:
+      'Akhir pekan ini saya tidak pergi ke mana-mana. Sabtu pagi, saya membersihkan rumah dan mencuci baju. Setelah itu, saya memasak nasi goreng untuk keluarga. Siang hari, kami menonton film bersama. Adik saya bermain di luar dengan teman-temannya. Malam hari, kami makan bersama dan bercerita. Akhir pekan yang tenang, tetapi menyenangkan.',
+    link: '',
+    sampleEnglish: {
+      title: 'A weekend at home',
+      snippet:
+        'This weekend I did not go anywhere. Saturday morning, I cleaned the house and washed clothes. After that, I cooked fried rice for the family. In the afternoon, we watched a film together. My younger sibling played outside with his friends. In the evening, we ate together and told stories. A quiet weekend, but an enjoyable one.',
+    },
+  },
 ]
