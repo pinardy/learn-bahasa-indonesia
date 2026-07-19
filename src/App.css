@@ -525,6 +525,22 @@
   margin: 0 auto;
 }
 
+.quiz-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.quiz-controls .filter-select {
+  max-width: 280px;
+}
+
+.quiz-controls .category-pills {
+  margin-bottom: 0;
+}
+
 .quiz-progress {
   display: flex;
   align-items: center;
