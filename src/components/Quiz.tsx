@@ -5,6 +5,7 @@ import { levenshtein, sample, shuffle } from '../utils'
 import { SpeakButton } from './SpeakButton'
 import { speak } from '../services/speech'
 import { useEnterKey } from '../hooks/useEnterKey'
+import { AnswerBar, ChoiceOptions, QuizProgress, QuizResult } from './QuizUI'
 
 interface QuizProps {
   savedWords: Word[]
@@ -145,26 +146,20 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
   )
 
   if (finished) {
-    const pct = Math.round((score / questions.length) * 100)
     return (
       <div className="quiz">
         {modePills}
-        <div className="quiz-result">
-          <span className="quiz-result-emoji">{pct >= 80 ? '🎉' : pct >= 50 ? '💪' : '📚'}</span>
-          <h2>
-            {score} / {questions.length}
-          </h2>
-          <p>
-            {pct >= 80
-              ? 'Luar biasa! (Amazing!)'
-              : pct >= 50
-                ? 'Bagus! Keep practicing!'
-                : 'Keep going — review the flashcards and try again!'}
-          </p>
-          <button className="btn btn-primary" onClick={() => restart(mode)}>
-            Try another quiz
-          </button>
-        </div>
+        <QuizResult
+          score={score}
+          total={questions.length}
+          onRestart={() => restart(mode)}
+          buttonLabel="Try another quiz"
+          messages={[
+            'Luar biasa! (Amazing!)',
+            'Bagus! Keep practicing!',
+            'Keep going — review the flashcards and try again!',
+          ]}
+        />
       </div>
     )
   }
@@ -190,17 +185,7 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
     <div className={`quiz ${answered ? 'quiz-answered' : ''}`}>
       {modePills}
 
-      <div className="quiz-progress">
-        <div className="quiz-progress-track">
-          <div
-            className="quiz-progress-fill"
-            style={{ width: `${(current / questions.length) * 100}%` }}
-          />
-        </div>
-        <span>
-          {current + 1} / {questions.length}
-        </span>
-      </div>
+      <QuizProgress current={current} total={questions.length} />
 
       <div className="quiz-question">
         {mode === 'listen' ? (
@@ -226,21 +211,12 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
       </div>
 
       {mode !== 'typed' ? (
-        <div className="quiz-options">
-          {question.options.map((option) => {
-            let cls = 'quiz-option'
-            if (answered) {
-              if (option === question.answer) cls += ' quiz-option-correct'
-              else if (option === selected) cls += ' quiz-option-wrong'
-              else cls += ' quiz-option-dim'
-            }
-            return (
-              <button key={option} className={cls} onClick={() => choose(option)}>
-                {option}
-              </button>
-            )
-          })}
-        </div>
+        <ChoiceOptions
+          options={question.options}
+          answer={question.answer}
+          selected={selected}
+          onChoose={choose}
+        />
       ) : (
         <form
           className="typed-form"
@@ -273,36 +249,29 @@ export function Quiz({ savedWords, onAnswer }: QuizProps) {
       )}
 
       {answered && (
-        <div className={`answer-bar ${isCorrect ? 'answer-bar-correct' : 'answer-bar-wrong'}`}>
-          <div className="answer-bar-inner">
-            <div className="answer-bar-text">
-              {isCorrect ? (
-                <strong className="text-success">
-                  {isTypo ? `Benar! Close enough — it's spelled “${correctAnswer}”` : 'Benar! (Correct!)'}
-                  <SpeakButton text={question.word.indonesian} size="sm" />
-                </strong>
-              ) : (
-                <strong className="text-error">
-                  Salah — the answer is “{correctAnswer}”
-                  <SpeakButton text={question.word.indonesian} size="sm" />
-                </strong>
-              )}
-              {mode === 'listen' && (
-                <p>
-                  You heard: <strong>{question.word.indonesian}</strong>
-                </p>
-              )}
-              {question.word.example && (
-                <p>
-                  <em>{question.word.example}</em> — {question.word.exampleTranslation}
-                </p>
-              )}
-            </div>
-            <button className="btn btn-primary" onClick={next}>
-              {current + 1 >= questions.length ? 'See results' : 'Next →'}
-            </button>
-          </div>
-        </div>
+        <AnswerBar correct={isCorrect} isLast={current + 1 >= questions.length} onNext={next}>
+          {isCorrect ? (
+            <strong className="text-success">
+              {isTypo ? `Benar! Close enough — it's spelled “${correctAnswer}”` : 'Benar! (Correct!)'}
+              <SpeakButton text={question.word.indonesian} size="sm" />
+            </strong>
+          ) : (
+            <strong className="text-error">
+              Salah — the answer is “{correctAnswer}”
+              <SpeakButton text={question.word.indonesian} size="sm" />
+            </strong>
+          )}
+          {mode === 'listen' && (
+            <p>
+              You heard: <strong>{question.word.indonesian}</strong>
+            </p>
+          )}
+          {question.word.example && (
+            <p>
+              <em>{question.word.example}</em> — {question.word.exampleTranslation}
+            </p>
+          )}
+        </AnswerBar>
       )}
     </div>
   )

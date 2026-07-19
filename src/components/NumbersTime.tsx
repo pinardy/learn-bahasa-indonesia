@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { makeNumberQuestion, makeTimeQuestion, type TrainerQuestion } from '../numbers'
 import { SpeakButton } from './SpeakButton'
 import { useEnterKey } from '../hooks/useEnterKey'
+import { AnswerBar, ChoiceOptions, QuizProgress, QuizResult } from './QuizUI'
 
 type TrainerMode = 'numbers' | 'time'
 
@@ -71,26 +72,20 @@ export function NumbersTime() {
   )
 
   if (finished) {
-    const pct = Math.round((score / questions.length) * 100)
     return (
       <div className="quiz">
         {modePills}
-        <div className="quiz-result">
-          <span className="quiz-result-emoji">{pct >= 80 ? '🎉' : pct >= 50 ? '💪' : '📚'}</span>
-          <h2>
-            {score} / {questions.length}
-          </h2>
-          <p>
-            {pct >= 80
-              ? 'Luar biasa! (Amazing!)'
-              : pct >= 50
-                ? 'Bagus! Keep practicing!'
-                : 'Keep going — numbers take repetition!'}
-          </p>
-          <button className="btn btn-primary" onClick={() => restart(mode)}>
-            Practice again
-          </button>
-        </div>
+        <QuizResult
+          score={score}
+          total={questions.length}
+          onRestart={() => restart(mode)}
+          buttonLabel="Practice again"
+          messages={[
+            'Luar biasa! (Amazing!)',
+            'Bagus! Keep practicing!',
+            'Keep going — numbers take repetition!',
+          ]}
+        />
       </div>
     )
   }
@@ -101,17 +96,7 @@ export function NumbersTime() {
     <div className={`quiz ${answered ? 'quiz-answered' : ''}`}>
       {modePills}
 
-      <div className="quiz-progress">
-        <div className="quiz-progress-track">
-          <div
-            className="quiz-progress-fill"
-            style={{ width: `${(current / questions.length) * 100}%` }}
-          />
-        </div>
-        <span>
-          {current + 1} / {questions.length}
-        </span>
-      </div>
+      <QuizProgress current={current} total={questions.length} />
 
       <div className="quiz-question">
         <span className="quiz-direction">
@@ -120,47 +105,31 @@ export function NumbersTime() {
         <h2 className="trainer-prompt">{question.prompt}</h2>
       </div>
 
-      <div className="quiz-options">
-        {question.options.map((option) => {
-          let cls = 'quiz-option'
-          if (answered) {
-            if (option === question.answer) cls += ' quiz-option-correct'
-            else if (option === selected) cls += ' quiz-option-wrong'
-            else cls += ' quiz-option-dim'
-          }
-          return (
-            <button key={option} className={cls} onClick={() => choose(option)}>
-              {option}
-            </button>
-          )
-        })}
-      </div>
+      <ChoiceOptions
+        options={question.options}
+        answer={question.answer}
+        selected={selected}
+        onChoose={choose}
+      />
 
       {answered && (
-        <div
-          className={`answer-bar ${
-            selected === question.answer ? 'answer-bar-correct' : 'answer-bar-wrong'
-          }`}
+        <AnswerBar
+          correct={selected === question.answer}
+          isLast={current + 1 >= questions.length}
+          onNext={next}
         >
-          <div className="answer-bar-inner">
-            <div className="answer-bar-text">
-              {selected === question.answer ? (
-                <strong className="text-success">
-                  Benar! (Correct!)
-                  <SpeakButton text={question.answer} size="sm" />
-                </strong>
-              ) : (
-                <strong className="text-error">
-                  Salah — the answer is “{question.answer}”
-                  <SpeakButton text={question.answer} size="sm" />
-                </strong>
-              )}
-            </div>
-            <button className="btn btn-primary" onClick={next}>
-              {current + 1 >= questions.length ? 'See results' : 'Next →'}
-            </button>
-          </div>
-        </div>
+          {selected === question.answer ? (
+            <strong className="text-success">
+              Benar! (Correct!)
+              <SpeakButton text={question.answer} size="sm" />
+            </strong>
+          ) : (
+            <strong className="text-error">
+              Salah — the answer is “{question.answer}”
+              <SpeakButton text={question.answer} size="sm" />
+            </strong>
+          )}
+        </AnswerBar>
       )}
     </div>
   )
