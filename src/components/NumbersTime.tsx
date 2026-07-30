@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { makeNumberQuestion, makeTimeQuestion, type TrainerQuestion } from '../numbers'
 import { SpeakButton } from './SpeakButton'
-import { useEnterKey } from '../hooks/useEnterKey'
+import { useQuizRound } from '../hooks/useQuizRound'
 import { AnswerBar, ChoiceOptions, QuizProgress, QuizResult } from './QuizUI'
 
 type TrainerMode = 'numbers' | 'time'
@@ -15,44 +15,17 @@ function makeRound(mode: TrainerMode): TrainerQuestion[] {
 
 export function NumbersTime() {
   const [mode, setMode] = useState<TrainerMode>('numbers')
-  const [questions, setQuestions] = useState<TrainerQuestion[]>(() => makeRound('numbers'))
-  const [current, setCurrent] = useState(0)
-  const [selected, setSelected] = useState<string | null>(null)
-  const [score, setScore] = useState(0)
-  const [finished, setFinished] = useState(false)
-
-  const question = questions[current]
-
-  const restart = useCallback((m: TrainerMode) => {
-    setQuestions(makeRound(m))
-    setCurrent(0)
-    setSelected(null)
-    setScore(0)
-    setFinished(false)
-  }, [])
+  const round = useQuizRound<TrainerQuestion>({
+    makeItems: () => makeRound(mode),
+    isCorrect: (q, choice) => choice === q.answer,
+  })
+  const { item: question, selected, answered, isLast } = round
 
   const switchMode = (m: TrainerMode) => {
     if (m === mode) return
     setMode(m)
-    restart(m)
+    round.restart(makeRound(m))
   }
-
-  const choose = (option: string) => {
-    if (selected !== null) return
-    setSelected(option)
-    if (option === question.answer) setScore((s) => s + 1)
-  }
-
-  const next = () => {
-    if (current + 1 >= questions.length) setFinished(true)
-    else {
-      setCurrent(current + 1)
-      setSelected(null)
-    }
-  }
-
-  // press Enter to advance once a question is answered
-  useEnterKey(selected !== null && !finished, next)
 
   const modePills = (
     <div className="category-pills">
@@ -71,14 +44,14 @@ export function NumbersTime() {
     </div>
   )
 
-  if (finished) {
+  if (round.finished) {
     return (
       <div className="quiz">
         {modePills}
         <QuizResult
-          score={score}
-          total={questions.length}
-          onRestart={() => restart(mode)}
+          score={round.score}
+          total={round.total}
+          onRestart={() => round.restart()}
           buttonLabel="Practice again"
           messages={[
             'Luar biasa! (Amazing!)',
@@ -90,13 +63,11 @@ export function NumbersTime() {
     )
   }
 
-  const answered = selected !== null
-
   return (
     <div className={`quiz ${answered ? 'quiz-answered' : ''}`}>
       {modePills}
 
-      <QuizProgress current={current} total={questions.length} />
+      <QuizProgress current={round.current} total={round.total} />
 
       <div className="quiz-question">
         <span className="quiz-direction">
@@ -109,15 +80,11 @@ export function NumbersTime() {
         options={question.options}
         answer={question.answer}
         selected={selected}
-        onChoose={choose}
+        onChoose={round.choose}
       />
 
       {answered && (
-        <AnswerBar
-          correct={selected === question.answer}
-          isLast={current + 1 >= questions.length}
-          onNext={next}
-        >
+        <AnswerBar correct={selected === question.answer} isLast={isLast} onNext={round.next}>
           {selected === question.answer ? (
             <strong className="text-success">
               Benar! (Correct!)

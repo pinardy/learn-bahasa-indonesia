@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CategoryId, SrsCard, Word } from '../types'
 import { CATEGORIES, SAVED_CATEGORY, WORDS } from '../data/vocabulary'
 import { levenshtein, sample, shuffle } from '../utils'
 import { dueWords } from '../srs'
 import { SpeakButton } from './SpeakButton'
 import { speak } from '../services/speech'
-import { useEnterKey } from '../hooks/useEnterKey'
+import { useQuizRound } from '../hooks/useQuizRound'
 import { AnswerBar, ChoiceOptions, QuizProgress, QuizResult } from './QuizUI'
 
 interface QuizProps {
@@ -92,75 +92,52 @@ export function Quiz({ savedWords, srs, onAnswer }: QuizProps) {
 
   const [mode, setMode] = useState<QuizMode>('choice')
   const [pool, setPool] = useState<QuizPool>('all')
-  const [questions, setQuestions] = useState<Question[]>(() => makeQuiz(allWords, allWords))
-  const [current, setCurrent] = useState(0)
-  const [selected, setSelected] = useState<string | null>(null)
   const [typed, setTyped] = useState('')
-  const [score, setScore] = useState(0)
-  const [finished, setFinished] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const question = questions[current]
+  const roundItems = (m: QuizMode, p: QuizPool) =>
+    makeQuiz(poolWords(p, allWords, srs), allWords, m === 'listen' ? 'id-en' : undefined)
+
+  const round = useQuizRound<Question>({
+    makeItems: () => roundItems(mode, pool),
+    isCorrect: (q, choice) =>
+      mode === 'typed' ? gradeTypedAnswer(choice, q.word.indonesian) : choice === q.answer,
+    onAnswer: (q, _choice, correct) => onAnswer(correct, q.word.id),
+  })
+  const { item: question, selected, isLast } = round
+  // local alias (not round.answered) so TS narrows `selected` to string below
+  const answered = selected !== null
   // typed mode always tests recall: English prompt → type the Indonesian
   const typedAnswer = question?.word.indonesian ?? ''
 
+  // clear the typed input whenever the question changes (advance or restart)
+  useEffect(() => setTyped(''), [round.current])
+
   useEffect(() => {
-    if (mode === 'typed' && !finished && selected === null) inputRef.current?.focus()
-  }, [mode, current, finished, selected])
+    if (mode === 'typed' && !round.finished && selected === null) inputRef.current?.focus()
+  }, [mode, round.current, round.finished, selected])
 
   // in listening mode, play the Indonesian word when a new question appears
   useEffect(() => {
-    if (mode === 'listen' && !finished && question) speak(question.word.indonesian)
+    if (mode === 'listen' && !round.finished && question) speak(question.word.indonesian)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, current, finished])
-
-  const build = useCallback(
-    (m: QuizMode, p: QuizPool) => {
-      const words = poolWords(p, allWords, srs)
-      setQuestions(makeQuiz(words, allWords, m === 'listen' ? 'id-en' : undefined))
-      setCurrent(0)
-      setSelected(null)
-      setTyped('')
-      setScore(0)
-      setFinished(false)
-    },
-    [allWords, srs]
-  )
+  }, [mode, round.current, round.finished])
 
   const switchMode = (m: QuizMode) => {
     if (m === mode) return
     setMode(m)
-    build(m, pool)
+    setTyped('')
+    round.restart(roundItems(m, pool))
   }
 
   const selectPool = (p: QuizPool) => {
     if (p === pool) return
     setPool(p)
-    build(mode, p)
+    setTyped('')
+    round.restart(roundItems(mode, p))
   }
 
   const gradeTyped = (attempt: string) => gradeTypedAnswer(attempt, typedAnswer)
-
-  const choose = (option: string) => {
-    if (selected !== null) return
-    setSelected(option)
-    const correct = mode === 'typed' ? gradeTyped(option) : option === question.answer
-    if (correct) setScore((s) => s + 1)
-    onAnswer(correct, question.word.id)
-  }
-
-  const next = () => {
-    if (current + 1 >= questions.length) {
-      setFinished(true)
-    } else {
-      setCurrent(current + 1)
-      setSelected(null)
-      setTyped('')
-    }
-  }
-
-  // press Enter to advance once a question is answered
-  useEnterKey(selected !== null && !finished, next)
 
   const poolSelect = (
     <select
@@ -209,14 +186,14 @@ export function Quiz({ savedWords, srs, onAnswer }: QuizProps) {
     </div>
   )
 
-  if (finished) {
+  if (round.finished) {
     return (
       <div className="quiz">
         {controls}
         <QuizResult
-          score={score}
-          total={questions.length}
-          onRestart={() => build(mode, pool)}
+          score={round.score}
+          total={round.total}
+          onRestart={() => round.restart()}
           buttonLabel="Try another quiz"
           messages={[
             'Luar biasa! (Amazing!)',
@@ -228,7 +205,6 @@ export function Quiz({ savedWords, srs, onAnswer }: QuizProps) {
     )
   }
 
-  const answered = selected !== null
   const isCorrect = answered
     ? mode === 'typed'
       ? gradeTyped(selected)
@@ -249,7 +225,7 @@ export function Quiz({ savedWords, srs, onAnswer }: QuizProps) {
     <div className={`quiz ${answered ? 'quiz-answered' : ''}`}>
       {controls}
 
-      <QuizProgress current={current} total={questions.length} />
+      <QuizProgress current={round.current} total={round.total} />
 
       <div className="quiz-question">
         {mode === 'listen' ? (
@@ -279,14 +255,14 @@ export function Quiz({ savedWords, srs, onAnswer }: QuizProps) {
           options={question.options}
           answer={question.answer}
           selected={selected}
-          onChoose={choose}
+          onChoose={round.choose}
         />
       ) : (
         <form
           className="typed-form"
           onSubmit={(e) => {
             e.preventDefault()
-            choose(typed)
+            round.choose(typed)
           }}
         >
           <input
@@ -313,7 +289,7 @@ export function Quiz({ savedWords, srs, onAnswer }: QuizProps) {
       )}
 
       {answered && (
-        <AnswerBar correct={isCorrect} isLast={current + 1 >= questions.length} onNext={next}>
+        <AnswerBar correct={isCorrect} isLast={isLast} onNext={round.next}>
           {isCorrect ? (
             <strong className="text-success">
               {isTypo ? `Benar! Close enough — it's spelled “${correctAnswer}”` : 'Benar! (Correct!)'}

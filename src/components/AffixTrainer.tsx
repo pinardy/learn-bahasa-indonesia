@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { AFFIX_EXERCISES } from '../data/affixes'
 import { shuffle } from '../utils'
 import { AnswerBar, ChoiceOptions, QuizProgress, QuizResult } from './QuizUI'
-import { useEnterKey } from '../hooks/useEnterKey'
+import { useQuizRound } from '../hooks/useQuizRound'
 import { SpeakButton } from './SpeakButton'
 
 interface AffixTrainerProps {
@@ -11,50 +11,20 @@ interface AffixTrainerProps {
 
 /** Drill the affix system: pick the correctly affixed form of a root word. */
 export function AffixTrainer({ onAnswer }: AffixTrainerProps) {
-  const [exercises, setExercises] = useState(() => shuffle(AFFIX_EXERCISES))
-  const [current, setCurrent] = useState(0)
-  const [selected, setSelected] = useState<string | null>(null)
-  const [score, setScore] = useState(0)
-  const [finished, setFinished] = useState(false)
+  const round = useQuizRound({
+    makeItems: () => shuffle(AFFIX_EXERCISES),
+    isCorrect: (ex, choice) => choice === ex.answer,
+    onAnswer: (_ex, _choice, correct) => onAnswer(correct, 'Affixes'),
+  })
+  const { item: exercise, selected, answered, isLast } = round
+  const options = useMemo(() => shuffle([exercise.answer, ...exercise.distractors]), [exercise])
 
-  const exercise = exercises[current]
-  const options = useMemo(
-    () => shuffle([exercise.answer, ...exercise.distractors]),
-    [exercise]
-  )
-
-  const choose = (option: string) => {
-    if (selected !== null) return
-    setSelected(option)
-    const correct = option === exercise.answer
-    if (correct) setScore((s) => s + 1)
-    onAnswer(correct, 'Affixes')
-  }
-
-  const next = () => {
-    if (current + 1 >= exercises.length) setFinished(true)
-    else {
-      setCurrent(current + 1)
-      setSelected(null)
-    }
-  }
-
-  const restart = () => {
-    setExercises(shuffle(AFFIX_EXERCISES))
-    setCurrent(0)
-    setSelected(null)
-    setScore(0)
-    setFinished(false)
-  }
-
-  useEnterKey(selected !== null && !finished, next)
-
-  if (finished) {
+  if (round.finished) {
     return (
       <QuizResult
-        score={score}
-        total={exercises.length}
-        onRestart={restart}
+        score={round.score}
+        total={round.total}
+        onRestart={() => round.restart()}
         buttonLabel="Practice again"
         topEmoji="🔧"
         messages={[
@@ -66,13 +36,12 @@ export function AffixTrainer({ onAnswer }: AffixTrainerProps) {
     )
   }
 
-  const answered = selected !== null
   const isCorrect = selected === exercise.answer
   const [before, after] = exercise.sentence.split('___')
 
   return (
     <div className={`quiz grammar ${answered ? 'quiz-answered' : ''}`}>
-      <QuizProgress current={current} total={exercises.length} />
+      <QuizProgress current={round.current} total={round.total} />
 
       <div className="quiz-question">
         <span className="topic-badge">
@@ -92,11 +61,11 @@ export function AffixTrainer({ onAnswer }: AffixTrainerProps) {
         options={options}
         answer={exercise.answer}
         selected={selected}
-        onChoose={choose}
+        onChoose={round.choose}
       />
 
       {answered && (
-        <AnswerBar correct={isCorrect} isLast={current + 1 >= exercises.length} onNext={next}>
+        <AnswerBar correct={isCorrect} isLast={isLast} onNext={round.next}>
           {isCorrect ? (
             <strong className="text-success">
               Benar! (Correct!)

@@ -1,9 +1,8 @@
-import { useState } from 'react'
 import type { CategoryId } from '../types'
 import { CATEGORIES, WORDS } from '../data/vocabulary'
 import { sample, shuffle } from '../utils'
 import { AnswerBar, ChoiceOptions, QuizProgress } from './QuizUI'
-import { useEnterKey } from '../hooks/useEnterKey'
+import { useQuizRound } from '../hooks/useQuizRound'
 import { SpeakButton } from './SpeakButton'
 
 const QUIZ_LENGTH = 8
@@ -46,54 +45,28 @@ interface CheckpointQuizProps {
 /** The short quiz that completes a learning-path unit (pass at 80%). */
 export function CheckpointQuiz({ categoryId, onPass, onClose }: CheckpointQuizProps) {
   const category = CATEGORIES.find((c) => c.id === categoryId)
-  const [questions, setQuestions] = useState<Question[]>(() => makeQuestions(categoryId))
-  const [current, setCurrent] = useState(0)
-  const [selected, setSelected] = useState<string | null>(null)
-  const [score, setScore] = useState(0)
-  const [finished, setFinished] = useState(false)
+  const round = useQuizRound<Question>({
+    makeItems: () => makeQuestions(categoryId),
+    isCorrect: (q, choice) => choice === q.answer,
+  })
+  const { item: question, selected, answered, isLast, total } = round
+  const needed = Math.ceil(total * PASS_RATIO)
 
-  const needed = Math.ceil(questions.length * PASS_RATIO)
-  const question = questions[current]
+  if (!category || total === 0) return null
 
-  const choose = (option: string) => {
-    if (selected !== null) return
-    setSelected(option)
-    if (option === question.answer) setScore((s) => s + 1)
-  }
-
-  const next = () => {
-    if (current + 1 >= questions.length) setFinished(true)
-    else {
-      setCurrent(current + 1)
-      setSelected(null)
-    }
-  }
-
-  const retry = () => {
-    setQuestions(makeQuestions(categoryId))
-    setCurrent(0)
-    setSelected(null)
-    setScore(0)
-    setFinished(false)
-  }
-
-  useEnterKey(selected !== null && !finished, next)
-
-  if (!category || questions.length === 0) return null
-
-  if (finished) {
-    const passed = score >= needed
+  if (round.finished) {
+    const passed = round.score >= needed
     return (
       <div className="quiz">
         <div className="quiz-result">
           <span className="quiz-result-emoji">{passed ? '🏅' : '📚'}</span>
           <h2>
-            {score} / {questions.length}
+            {round.score} / {total}
           </h2>
           <p>
             {passed
               ? `Unit complete — ${category.name} checkpoint passed!`
-              : `You need ${needed}/${questions.length} to pass. Review the flashcards and try again!`}
+              : `You need ${needed}/${total} to pass. Review the flashcards and try again!`}
           </p>
           {passed ? (
             <button className="btn btn-success" onClick={onPass}>
@@ -104,7 +77,7 @@ export function CheckpointQuiz({ categoryId, onPass, onClose }: CheckpointQuizPr
               <button className="btn btn-ghost" onClick={onClose}>
                 ← Back
               </button>
-              <button className="btn btn-primary" onClick={retry}>
+              <button className="btn btn-primary" onClick={() => round.restart()}>
                 Try again
               </button>
             </div>
@@ -115,17 +88,17 @@ export function CheckpointQuiz({ categoryId, onPass, onClose }: CheckpointQuizPr
   }
 
   return (
-    <div className={`quiz ${selected !== null ? 'quiz-answered' : ''}`}>
+    <div className={`quiz ${answered ? 'quiz-answered' : ''}`}>
       <div className="checkpoint-header">
         <button className="btn btn-ghost btn-small" onClick={onClose}>
           ← Back
         </button>
         <span className="checkpoint-title">
-          ✍️ Checkpoint: {category.emoji} {category.name} — pass with {needed}/{questions.length}
+          ✍️ Checkpoint: {category.emoji} {category.name} — pass with {needed}/{total}
         </span>
       </div>
 
-      <QuizProgress current={current} total={questions.length} />
+      <QuizProgress current={round.current} total={total} />
 
       <div className="quiz-question">
         <h2>{question.prompt}</h2>
@@ -135,15 +108,11 @@ export function CheckpointQuiz({ categoryId, onPass, onClose }: CheckpointQuizPr
         options={question.options}
         answer={question.answer}
         selected={selected}
-        onChoose={choose}
+        onChoose={round.choose}
       />
 
-      {selected !== null && (
-        <AnswerBar
-          correct={selected === question.answer}
-          isLast={current + 1 >= questions.length}
-          onNext={next}
-        >
+      {answered && (
+        <AnswerBar correct={selected === question.answer} isLast={isLast} onNext={round.next}>
           {selected === question.answer ? (
             <strong className="text-success">
               Benar! (Correct!)

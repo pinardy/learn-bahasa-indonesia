@@ -1,8 +1,7 @@
-import { useState } from 'react'
 import { SCENARIOS, type Phrase } from '../data/phrases'
 import { sample, shuffle } from '../utils'
 import { AnswerBar, ChoiceOptions, QuizProgress, QuizResult } from './QuizUI'
-import { useEnterKey } from '../hooks/useEnterKey'
+import { useQuizRound } from '../hooks/useQuizRound'
 import { SpeakButton } from './SpeakButton'
 
 const ROUND_LENGTH = 10
@@ -28,44 +27,18 @@ function makeRound(): Question[] {
 
 /** Quiz over the phrasebook: read (or hear) the Indonesian, pick the meaning. */
 export function PhrasePractice() {
-  const [questions, setQuestions] = useState<Question[]>(makeRound)
-  const [current, setCurrent] = useState(0)
-  const [selected, setSelected] = useState<string | null>(null)
-  const [score, setScore] = useState(0)
-  const [finished, setFinished] = useState(false)
+  const round = useQuizRound<Question>({
+    makeItems: makeRound,
+    isCorrect: (q, choice) => choice === q.phrase.english,
+  })
+  const { item: question, selected, answered, isLast } = round
 
-  const question = questions[current]
-
-  const choose = (option: string) => {
-    if (selected !== null) return
-    setSelected(option)
-    if (option === question.phrase.english) setScore((s) => s + 1)
-  }
-
-  const next = () => {
-    if (current + 1 >= questions.length) setFinished(true)
-    else {
-      setCurrent(current + 1)
-      setSelected(null)
-    }
-  }
-
-  const restart = () => {
-    setQuestions(makeRound())
-    setCurrent(0)
-    setSelected(null)
-    setScore(0)
-    setFinished(false)
-  }
-
-  useEnterKey(selected !== null && !finished, next)
-
-  if (finished) {
+  if (round.finished) {
     return (
       <QuizResult
-        score={score}
-        total={questions.length}
-        onRestart={restart}
+        score={round.score}
+        total={round.total}
+        onRestart={() => round.restart()}
         buttonLabel="Practice again"
         messages={[
           'Luar biasa! Ready for the streets of Jakarta!',
@@ -77,8 +50,8 @@ export function PhrasePractice() {
   }
 
   return (
-    <div className={`quiz ${selected !== null ? 'quiz-answered' : ''}`}>
-      <QuizProgress current={current} total={questions.length} />
+    <div className={`quiz ${answered ? 'quiz-answered' : ''}`}>
+      <QuizProgress current={round.current} total={round.total} />
 
       <div className="quiz-question">
         <span className="quiz-direction">What does this mean?</span>
@@ -92,15 +65,11 @@ export function PhrasePractice() {
         options={question.options}
         answer={question.phrase.english}
         selected={selected}
-        onChoose={choose}
+        onChoose={round.choose}
       />
 
-      {selected !== null && (
-        <AnswerBar
-          correct={selected === question.phrase.english}
-          isLast={current + 1 >= questions.length}
-          onNext={next}
-        >
+      {answered && (
+        <AnswerBar correct={selected === question.phrase.english} isLast={isLast} onNext={round.next}>
           {selected === question.phrase.english ? (
             <strong className="text-success">
               Benar! (Correct!)
