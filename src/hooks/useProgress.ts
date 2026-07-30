@@ -2,8 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import type { CategoryId, Progress, Word, WordStatus } from '../types'
 import { schedule } from '../srs'
 import { DEFAULT_PROGRESS, normalizeProgress } from '../services/progressIO'
+import { STORAGE_KEYS } from '../storage'
 
-const STORAGE_KEY = 'bahasa-learner-progress'
+const STORAGE_KEY = STORAGE_KEYS.progress
 
 function loadProgress(): Progress {
   try {

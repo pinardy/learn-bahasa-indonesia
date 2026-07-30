@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { CategoryId } from './types'
 import { useProgress } from './hooks/useProgress'
-import { useDragReorder } from './hooks/useDragReorder'
+import { useNavOrder } from './hooks/useNavOrder'
+import { useTheme } from './hooks/useTheme'
+import { STORAGE_KEYS } from './storage'
 import { Home } from './components/Home'
 import { Flashcards, type DeckFilter } from './components/Flashcards'
 import { Phrases } from './components/Phrases'
@@ -46,13 +48,13 @@ const isView = (v: unknown): v is View =>
 // from the saved order) are appended in their default position.
 function loadNavOrder(): View[] {
   try {
-    const saved = JSON.parse(localStorage.getItem('bahasa-nav-order') ?? 'null')
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.navOrder) ?? 'null')
     if (Array.isArray(saved)) {
       const order = saved.filter(isView)
       return [...order, ...VIEWS.filter((v) => !order.includes(v))]
     }
     // Migrate from the old pin feature (pinned tabs floated to the front).
-    const pinned = JSON.parse(localStorage.getItem('bahasa-pinned') ?? '[]')
+    const pinned = JSON.parse(localStorage.getItem(STORAGE_KEYS.pinned) ?? '[]')
     if (Array.isArray(pinned)) {
       const front = pinned.filter(isView)
       if (front.length) return [...front, ...VIEWS.filter((v) => !front.includes(v))]
@@ -65,7 +67,7 @@ function loadNavOrder(): View[] {
 
 export default function App() {
   const [view, setView] = useState<View>(() => {
-    const saved = localStorage.getItem('bahasa-view')
+    const saved = localStorage.getItem(STORAGE_KEYS.view)
     return isView(saved) ? saved : 'home'
   })
   // A deck to open Flashcards with (review from the home banner, or a
@@ -74,22 +76,9 @@ export default function App() {
   // When set, a learning-path checkpoint quiz overlays the current view.
   const [checkpoint, setCheckpoint] = useState<CategoryId | null>(null)
 
-  // User-arranged tab order (persisted). Rearranged by hold-and-drag.
-  const [navOrder, setNavOrder] = useState<View[]>(loadNavOrder)
-  const [theme, setTheme] = useState<'light' | 'dark'>(() =>
-    document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'
-  )
-
-  // Show a fade/chevron hint while the nav can still be scrolled to the right
-  // (so mobile users know off-screen tabs like News exist).
-  const navRef = useRef<HTMLElement>(null)
-  const [navHasMore, setNavHasMore] = useState(false)
-
-  const updateNavFade = () => {
-    const el = navRef.current
-    if (!el) return
-    setNavHasMore(el.scrollWidth - el.clientWidth - el.scrollLeft > 1)
-  }
+  const { theme, toggleTheme } = useTheme()
+  const { navOrder, navRef, navHasMore, updateNavFade, dragView, wasDrag, pressProps } =
+    useNavOrder<View>(loadNavOrder)
 
   const orderedNav = useMemo(
     () =>
@@ -99,37 +88,10 @@ export default function App() {
     [navOrder]
   )
 
-  // Hold a tab for 500ms to "lift" it, then drag left/right to rearrange.
-  const { dragging: dragView, wasDrag, pressProps } = useDragReorder(navRef, setNavOrder)
-
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
-    localStorage.setItem('bahasa-theme', theme)
-  }, [theme])
-
-  useEffect(() => {
-    localStorage.setItem('bahasa-view', view)
+    localStorage.setItem(STORAGE_KEYS.view, view)
   }, [view])
 
-  useEffect(() => {
-    localStorage.setItem('bahasa-nav-order', JSON.stringify(navOrder))
-    localStorage.removeItem('bahasa-pinned') // superseded by the full order
-  }, [navOrder])
-
-  // Recompute the fade whenever the tab order changes.
-  useEffect(() => {
-    updateNavFade()
-  }, [navOrder])
-
-  useEffect(() => {
-    updateNavFade()
-    // Bring the restored/active tab into view (it may start off-screen).
-    navRef.current
-      ?.querySelector('.nav-btn-active')
-      ?.scrollIntoView({ inline: 'center', block: 'nearest' })
-    window.addEventListener('resize', updateNavFade)
-    return () => window.removeEventListener('resize', updateNavFade)
-  }, [])
   const {
     progress,
     reviewWord,
@@ -189,7 +151,7 @@ export default function App() {
         </div>
         <button
           className="icon-btn theme-toggle"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          onClick={toggleTheme}
           aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
         >

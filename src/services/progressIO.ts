@@ -1,4 +1,4 @@
-import type { CategoryId, Progress, Word, WordStatus, SrsCard } from '../types'
+import type { CategoryId, Progress, Word, WordStatus } from '../types'
 import { WORDS } from '../data/vocabulary'
 import { PATH_ORDER, UNIT_MASTERY } from '../data/path'
 
@@ -11,17 +11,6 @@ export interface ProgressBackup {
   version: number
   exportedAt: string
   progress: Progress
-}
-
-export const DEFAULT_PROGRESS: Progress = {
-  wordStatus: {},
-  quizStats: { correct: 0, total: 0 },
-  grammarStats: { correct: 0, total: 0 },
-  grammarByTopic: {},
-  sentencesSolved: [],
-  savedWords: [],
-  srs: {},
-  unitsPassed: [],
 }
 
 // Checkpoint quizzes were added after the learning path: grandfather units
@@ -47,27 +36,63 @@ const asStats = (v: unknown): { correct: number; total: number } => {
 }
 
 /**
+ * Single source of truth for the Progress shape: each field declares its empty
+ * default and how to coerce arbitrary parsed JSON into it. DEFAULT_PROGRESS and
+ * normalizeProgress are both derived from this, so adding a Progress field is a
+ * one-line change here (plus the type) — no risk of the two drifting apart.
+ *
+ * `coerce` receives the whole raw record so a field can depend on another
+ * (unitsPassed seeds from wordStatus for backups taken before it existed).
+ */
+type FieldSpec<K extends keyof Progress> = {
+  empty: () => Progress[K]
+  coerce: (raw: Record<string, unknown>) => Progress[K]
+}
+type ProgressSpec = { [K in keyof Progress]: FieldSpec<K> }
+
+const SPEC: ProgressSpec = {
+  wordStatus: {
+    empty: () => ({}),
+    coerce: (r) => (isObject(r.wordStatus) ? (r.wordStatus as Progress['wordStatus']) : {}),
+  },
+  quizStats: { empty: () => ({ correct: 0, total: 0 }), coerce: (r) => asStats(r.quizStats) },
+  grammarStats: { empty: () => ({ correct: 0, total: 0 }), coerce: (r) => asStats(r.grammarStats) },
+  grammarByTopic: {
+    empty: () => ({}),
+    coerce: (r) =>
+      isObject(r.grammarByTopic) ? (r.grammarByTopic as Progress['grammarByTopic']) : {},
+  },
+  sentencesSolved: { empty: () => [], coerce: (r) => asArray<string>(r.sentencesSolved) },
+  savedWords: { empty: () => [], coerce: (r) => asArray<Word>(r.savedWords) },
+  srs: {
+    empty: () => ({}),
+    coerce: (r) => (isObject(r.srs) ? (r.srs as Progress['srs']) : {}),
+  },
+  unitsPassed: {
+    empty: () => [],
+    coerce: (r) =>
+      Array.isArray(r.unitsPassed)
+        ? (r.unitsPassed as CategoryId[])
+        : seedUnitsPassed(SPEC.wordStatus.coerce(r)),
+  },
+}
+
+const PROGRESS_FIELDS = Object.keys(SPEC) as (keyof Progress)[]
+
+export const DEFAULT_PROGRESS: Progress = Object.fromEntries(
+  PROGRESS_FIELDS.map((k) => [k, SPEC[k].empty()])
+) as unknown as Progress
+
+/**
  * Coerce arbitrary parsed JSON into a valid Progress, defaulting every field.
  * Shared by localStorage loading and file import so both tolerate partial or
  * older data (e.g. a backup taken before `unitsPassed` existed).
  */
 export function normalizeProgress(parsed: unknown): Progress {
-  const p = isObject(parsed) ? parsed : {}
-  const wordStatus = isObject(p.wordStatus) ? (p.wordStatus as Record<string, WordStatus>) : {}
-  return {
-    wordStatus,
-    quizStats: asStats(p.quizStats),
-    grammarStats: asStats(p.grammarStats),
-    grammarByTopic: isObject(p.grammarByTopic)
-      ? (p.grammarByTopic as Progress['grammarByTopic'])
-      : {},
-    sentencesSolved: asArray<string>(p.sentencesSolved),
-    savedWords: asArray<Word>(p.savedWords),
-    srs: isObject(p.srs) ? (p.srs as Record<string, SrsCard>) : {},
-    unitsPassed: Array.isArray(p.unitsPassed)
-      ? (p.unitsPassed as CategoryId[])
-      : seedUnitsPassed(wordStatus),
-  }
+  const r = isObject(parsed) ? parsed : {}
+  return Object.fromEntries(
+    PROGRESS_FIELDS.map((k) => [k, SPEC[k].coerce(r)])
+  ) as unknown as Progress
 }
 
 /** Keys that mark an object as (some version of) a progress payload. */

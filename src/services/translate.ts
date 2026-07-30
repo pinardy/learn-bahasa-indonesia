@@ -1,4 +1,6 @@
-const CACHE_KEY = 'bahasa-news-tx-cache'
+import { STORAGE_KEYS } from '../storage'
+
+const CACHE_KEY = STORAGE_KEYS.translationCache
 const MAX_CACHE_ENTRIES = 400
 
 type TxCache = Record<string, string>
