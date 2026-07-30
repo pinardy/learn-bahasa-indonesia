@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { SCENARIOS } from './phrases'
-import { STORIES } from './stories'
+import { STORIES, STORY_QUESTIONS } from './stories'
 
 describe('phrase scenarios', () => {
   it('have unique ids', () => {
@@ -38,6 +38,30 @@ describe('beginner stories', () => {
       expect(s.snippet.trim(), s.id).not.toBe('')
       expect(s.sampleEnglish?.title.trim(), s.id).toBeTruthy()
       expect(s.sampleEnglish?.snippet.trim(), s.id).toBeTruthy()
+    }
+  })
+})
+
+describe('story comprehension questions', () => {
+  it('every story has at least one question', () => {
+    for (const s of STORIES) {
+      expect(STORY_QUESTIONS[s.id]?.length ?? 0, s.id).toBeGreaterThan(0)
+    }
+  })
+
+  it('questions never point at a story that does not exist', () => {
+    const storyIds = new Set(STORIES.map((s) => s.id))
+    for (const id of Object.keys(STORY_QUESTIONS)) {
+      expect(storyIds.has(id), id).toBe(true)
+    }
+  })
+
+  it('every answer is one of its own options, and options are unique', () => {
+    for (const [id, questions] of Object.entries(STORY_QUESTIONS)) {
+      for (const q of questions) {
+        expect(q.options, `${id}: ${q.question}`).toContain(q.answer)
+        expect(new Set(q.options).size, `${id}: ${q.question}`).toBe(q.options.length)
+      }
     }
   })
 })

@@ -233,4 +233,106 @@ export const STORY_QUESTIONS: Record<string, StoryQuestion[]> = {
       answer: 'setiap siang',
     },
   ],
+  'story-6': [
+    {
+      question: 'Berapa kata baru yang dia pelajari pagi ini?',
+      options: ['lima kata', 'sepuluh kata', 'dua puluh kata'],
+      answer: 'sepuluh kata',
+    },
+    {
+      question: 'Siapa yang membantu dia belajar?',
+      options: ['Budi', 'Dewi', 'gurunya'],
+      answer: 'Budi',
+    },
+    {
+      question: 'Sekarang dia bisa apa?',
+      options: ['menulis surat', 'memesan makanan', 'menonton film'],
+      answer: 'memesan makanan',
+    },
+  ],
+  'story-7': [
+    {
+      question: 'Mengapa dia tidak bisa pergi ke luar?',
+      options: ['karena hujan', 'karena sakit', 'karena macet'],
+      answer: 'karena hujan',
+    },
+    {
+      question: 'Di mana kucingnya tidur?',
+      options: ['di sofa', 'di dapur', 'di taman'],
+      answer: 'di sofa',
+    },
+    {
+      question: 'Kapan hujan berhenti?',
+      options: ['pagi hari', 'sore hari', 'malam hari'],
+      answer: 'sore hari',
+    },
+  ],
+  'story-8': [
+    {
+      question: 'Mengapa dia memesan ojek online?',
+      options: ['karena jalan macet', 'karena hujan', 'karena mobilnya rusak'],
+      answer: 'karena jalan macet',
+    },
+    {
+      question: 'Apa yang diberi pengemudi kepada dia?',
+      options: ['helm', 'tiket', 'air minum'],
+      answer: 'helm',
+    },
+    {
+      question: 'Berapa lama perjalanannya?',
+      options: ['lima menit', 'lima belas menit', 'lima puluh menit'],
+      answer: 'lima belas menit',
+    },
+  ],
+  'story-9': [
+    {
+      question: 'Berapa umur Dewi sekarang?',
+      options: ['dua puluh tahun', 'dua puluh lima tahun', 'tiga puluh tahun'],
+      answer: 'dua puluh lima tahun',
+    },
+    {
+      question: 'Apa yang dibeli penulis?',
+      options: ['kue cokelat dan bunga', 'baju baru', 'buku dan pulpen'],
+      answer: 'kue cokelat dan bunga',
+    },
+    {
+      question: 'Di mana pesta itu?',
+      options: ['di restoran', 'di rumah Dewi', 'di kantor'],
+      answer: 'di rumah Dewi',
+    },
+  ],
+  'story-10': [
+    {
+      question: 'Sudah berapa lama dia sakit?',
+      options: ['satu hari', 'dua hari', 'satu minggu'],
+      answer: 'dua hari',
+    },
+    {
+      question: 'Berapa kali sehari dia harus minum obat?',
+      options: ['dua kali', 'tiga kali', 'empat kali'],
+      answer: 'tiga kali',
+    },
+    {
+      question: 'Di mana dia membeli obat?',
+      options: ['di apotek', 'di pasar', 'di rumah sakit'],
+      answer: 'di apotek',
+    },
+  ],
+  'story-11': [
+    {
+      question: 'Apa yang dia lakukan Sabtu pagi?',
+      options: ['membersihkan rumah', 'pergi ke pantai', 'bekerja di kantor'],
+      answer: 'membersihkan rumah',
+    },
+    {
+      question: 'Apa yang dia masak untuk keluarga?',
+      options: ['ayam goreng', 'nasi goreng', 'ikan bakar'],
+      answer: 'nasi goreng',
+    },
+    {
+      question: 'Siapa yang bermain di luar?',
+      options: ['adiknya', 'kakaknya', 'ayahnya'],
+      answer: 'adiknya',
+    },
+  ],
 }
