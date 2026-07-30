@@ -236,7 +236,9 @@ export default function App() {
         {view === 'sentences' && (
           <SentenceBuilder solved={progress.sentencesSolved} onSolved={markSentenceSolved} />
         )}
-        {view === 'grammar' && <Grammar onAnswer={recordGrammarAnswer} />}
+        {view === 'grammar' && (
+          <Grammar onAnswer={recordGrammarAnswer} byTopic={progress.grammarByTopic} />
+        )}
         {view === 'numbers' && <NumbersTime />}
         {view === 'vocabulary' && (
           <Vocabulary

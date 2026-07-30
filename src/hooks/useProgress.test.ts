@@ -6,6 +6,7 @@ const baseProgress = (): Progress => ({
   wordStatus: { tracked: 'known' },
   quizStats: { correct: 3, total: 5 },
   grammarStats: { correct: 0, total: 0 },
+  grammarByTopic: {},
   sentencesSolved: [],
   savedWords: [],
   srs: { tracked: { box: 3, due: '2026-07-11', reps: 4 } },

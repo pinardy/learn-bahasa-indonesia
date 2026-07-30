@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { NewsArticle, Word, WordStatus } from '../types'
 import { fetchNews, NEWS_SOURCES, SAMPLE_ARTICLES, type NewsSource } from '../services/news'
-import { STORIES } from '../data/stories'
+import { STORIES, STORY_QUESTIONS } from '../data/stories'
+import { StoryQuiz } from './StoryQuiz'
 import { translateIdToEn } from '../services/translate'
 import { WORDS } from '../data/vocabulary'
 import { SpeakButton } from './SpeakButton'
@@ -404,6 +405,10 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
                             ? 'Translation failed — retry'
                             : 'Show English translation'}
                       </button>
+                    )}
+
+                    {STORY_QUESTIONS[article.id] && (
+                      <StoryQuiz questions={STORY_QUESTIONS[article.id]} />
                     )}
 
                     {article.link && (

@@ -1,5 +1,11 @@
 import type { NewsArticle } from '../types'
 
+export interface StoryQuestion {
+  question: string
+  options: string[]
+  answer: string
+}
+
 /**
  * Hand-written beginner stories, deliberately built from taught vocabulary.
  * Shaped as pre-translated articles so the whole News reading experience
@@ -139,3 +145,92 @@ export const STORIES: NewsArticle[] = [
     },
   },
 ]
+
+/** Comprehension checks per story (questions and answers in Indonesian). */
+export const STORY_QUESTIONS: Record<string, StoryQuestion[]> = {
+  'story-1': [
+    {
+      question: 'Kapan penulis datang ke Jakarta?',
+      options: ['kemarin', 'besok', 'minggu depan'],
+      answer: 'kemarin',
+    },
+    {
+      question: 'Apa yang dia minum pagi ini?',
+      options: ['teh', 'kopi', 'air'],
+      answer: 'kopi',
+    },
+    {
+      question: 'Di mana dia membeli buah?',
+      options: ['di hotel', 'di bandara', 'di pasar'],
+      answer: 'di pasar',
+    },
+  ],
+  'story-2': [
+    {
+      question: 'Siapa yang bekerja di rumah sakit?',
+      options: ['ayah Sari', 'ibu Sari', 'kakak Sari'],
+      answer: 'ibu Sari',
+    },
+    {
+      question: 'Apa yang kakak Sari suka?',
+      options: ['membaca buku', 'bermain dengan kucing', 'memasak'],
+      answer: 'membaca buku',
+    },
+    {
+      question: 'Kapan mereka pergi ke taman?',
+      options: ['setiap malam', 'hari Senin', 'hari Minggu'],
+      answer: 'hari Minggu',
+    },
+  ],
+  'story-3': [
+    {
+      question: 'Ke mana mereka pergi minggu depan?',
+      options: ['ke Bali', 'ke Jakarta', 'ke Sulawesi'],
+      answer: 'ke Bali',
+    },
+    {
+      question: 'Adik mau makan apa?',
+      options: ['nasi goreng', 'ikan bakar', 'sate ayam'],
+      answer: 'ikan bakar',
+    },
+    {
+      question: 'Berapa malam mereka akan tinggal di hotel?',
+      options: ['dua malam', 'tiga malam', 'lima malam'],
+      answer: 'tiga malam',
+    },
+  ],
+  'story-4': [
+    {
+      question: 'Apa yang hilang kemarin?',
+      options: ['dompet', 'kunci', 'kucing'],
+      answer: 'kucing',
+    },
+    {
+      question: 'Di mana kucing itu malam ini?',
+      options: ['di bawah meja', 'di taman', 'di jalan'],
+      answer: 'di bawah meja',
+    },
+    {
+      question: 'Kucing itu mau makan apa?',
+      options: ['ayam', 'ikan', 'buah'],
+      answer: 'ikan',
+    },
+  ],
+  'story-5': [
+    {
+      question: 'Siapa pemilik warung?',
+      options: ['Bu Tini', 'Pak Budi', 'Bu Sari'],
+      answer: 'Bu Tini',
+    },
+    {
+      question: 'Berapa harga semuanya?',
+      options: ['lima ribu rupiah', 'lima belas ribu rupiah', 'lima puluh ribu rupiah'],
+      answer: 'lima belas ribu rupiah',
+    },
+    {
+      question: 'Kapan penulis makan di warung?',
+      options: ['setiap pagi', 'setiap siang', 'setiap malam'],
+      answer: 'setiap siang',
+    },
+  ],
+}

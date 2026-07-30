@@ -3,12 +3,47 @@ import { GRAMMAR_EXERCISES } from '../data/grammar'
 import { shuffle } from '../utils'
 import { useEnterKey } from '../hooks/useEnterKey'
 import { AnswerBar, ChoiceOptions, QuizProgress, QuizResult } from './QuizUI'
+import { AffixTrainer } from './AffixTrainer'
+import { GrammarLessons } from './GrammarLessons'
 
 interface GrammarProps {
-  onAnswer: (correct: boolean) => void
+  onAnswer: (correct: boolean, topic: string) => void
+  byTopic: Record<string, { correct: number; total: number }>
 }
 
-export function Grammar({ onAnswer }: GrammarProps) {
+type GrammarMode = 'practice' | 'affixes' | 'lessons'
+
+const MODES: { id: GrammarMode; label: string }[] = [
+  { id: 'practice', label: '✏️ Practice' },
+  { id: 'affixes', label: '🔧 Affixes' },
+  { id: 'lessons', label: '📚 Lessons' },
+]
+
+export function Grammar({ onAnswer, byTopic }: GrammarProps) {
+  const [mode, setMode] = useState<GrammarMode>('practice')
+
+  return (
+    <div className="grammar-tab">
+      <div className="category-pills">
+        {MODES.map((m) => (
+          <button
+            key={m.id}
+            className={`pill ${mode === m.id ? 'pill-active' : ''}`}
+            onClick={() => setMode(m.id)}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+
+      {mode === 'practice' && <GrammarPractice onAnswer={onAnswer} />}
+      {mode === 'affixes' && <AffixTrainer onAnswer={onAnswer} />}
+      {mode === 'lessons' && <GrammarLessons byTopic={byTopic} />}
+    </div>
+  )
+}
+
+function GrammarPractice({ onAnswer }: Pick<GrammarProps, 'onAnswer'>) {
   const [exercises, setExercises] = useState(() => shuffle(GRAMMAR_EXERCISES))
   const [current, setCurrent] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
@@ -26,7 +61,7 @@ export function Grammar({ onAnswer }: GrammarProps) {
     setSelected(option)
     const correct = option === exercise.answer
     if (correct) setScore((s) => s + 1)
-    onAnswer(correct)
+    onAnswer(correct, exercise.topic)
   }
 
   const next = () => {

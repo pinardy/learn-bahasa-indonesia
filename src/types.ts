@@ -82,6 +82,8 @@ export interface Progress {
   wordStatus: Record<string, WordStatus>
   quizStats: { correct: number; total: number }
   grammarStats: { correct: number; total: number }
+  /** Grammar accuracy split by topic (including 'Affixes') */
+  grammarByTopic: Record<string, { correct: number; total: number }>
   sentencesSolved: string[]
   /** Words the user saved while reading news articles */
   savedWords: Word[]

@@ -21,7 +21,9 @@ An interactive web app for learning Bahasa Indonesia, built with React, TypeScri
 - **🗣️ Phrasebook & pronunciation** — survival phrases for real situations (restaurant, directions, shopping, emergencies…) plus a guide to the sounds that differ from English, all speakable
 - **🎤 Speaking practice** — say words and phrases aloud; browser speech recognition (Chrome/Android) checks your pronunciation
 - **✏️ Phrase practice** — quiz yourself on the phrasebook so the phrases actually stick
-- **📖 Beginner stories** — hand-written graded stories with the same tap-a-word, save, and readability tools as the news reader
+- **📖 Beginner stories** — hand-written graded stories with the same tap-a-word, save, and readability tools as the news reader, plus comprehension questions in Indonesian
+- **🔧 Affix trainer & grammar lessons** — drill the meN-/ber-/di-/pe-/-an/ter- affix system, read short lessons per grammar topic, and see your drill accuracy split by topic
+- **💾 Export / import** — download your whole progress as JSON and restore it on any device
 - **⏰ Spaced repetition** — grading a flashcard schedules it on a Leitner-box interval (1 → 2 → 4 → 9 → 18 days); the home screen shows how many words are due and a "Due for review" deck resurfaces them right before you'd forget. Quiz answers feed the same schedule: a miss sends the word back to box 1 and into the review rotation, a correct answer advances words already being reviewed
 - **🔊 Audio pronunciation** — tap the speaker on any word, flashcard, quiz answer, sentence, or news word to hear it spoken in Indonesian (browser-native text-to-speech; works offline)
 - **📱 Installable PWA** — add it to your phone's home screen; the whole app works offline, including previously loaded news and cached translations

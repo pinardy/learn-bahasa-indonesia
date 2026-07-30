@@ -1642,6 +1642,163 @@
   }
 }
 
+/* ===== Grammar lessons ===== */
+.lesson-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lesson-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.lesson-item-open {
+  border-color: var(--red);
+}
+
+.lesson-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 700;
+}
+
+.lesson-title {
+  flex: 1;
+}
+
+.lesson-accuracy {
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.lesson-accuracy-high {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.lesson-accuracy-mid {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.lesson-accuracy-low {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.lesson-chevron {
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+}
+
+.lesson-body {
+  padding: 0 16px 14px;
+  border-top: 1px dashed var(--border);
+}
+
+.lesson-body > p {
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin: 12px 0;
+}
+
+.lesson-examples {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lesson-examples li {
+  background: var(--cream);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.95rem;
+}
+
+.lesson-examples em {
+  font-weight: 600;
+}
+
+/* ===== Story comprehension quiz ===== */
+.story-quiz {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.story-quiz-title {
+  font-weight: 700;
+  margin: 0 0 10px;
+}
+
+.story-quiz-title span {
+  font-weight: 400;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.story-question {
+  margin-bottom: 12px;
+}
+
+.story-question-text {
+  margin: 0 0 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.story-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.story-option {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  transition: border-color 0.15s;
+}
+
+.story-option:hover {
+  border-color: var(--red);
+}
+
+.story-option-correct {
+  border-color: var(--green);
+  background: var(--green-soft);
+  color: var(--green);
+  font-weight: 700;
+}
+
+.story-option-wrong {
+  border-color: var(--red);
+  background: var(--red-soft);
+  color: var(--red);
+}
+
 /* ===== Category dropdown ===== */
 .filter-select {
   display: block;

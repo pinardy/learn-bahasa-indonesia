@@ -17,6 +17,7 @@ export const DEFAULT_PROGRESS: Progress = {
   wordStatus: {},
   quizStats: { correct: 0, total: 0 },
   grammarStats: { correct: 0, total: 0 },
+  grammarByTopic: {},
   sentencesSolved: [],
   savedWords: [],
   srs: {},
@@ -57,6 +58,9 @@ export function normalizeProgress(parsed: unknown): Progress {
     wordStatus,
     quizStats: asStats(p.quizStats),
     grammarStats: asStats(p.grammarStats),
+    grammarByTopic: isObject(p.grammarByTopic)
+      ? (p.grammarByTopic as Progress['grammarByTopic'])
+      : {},
     sentencesSolved: asArray<string>(p.sentencesSolved),
     savedWords: asArray<Word>(p.savedWords),
     srs: isObject(p.srs) ? (p.srs as Record<string, SrsCard>) : {},

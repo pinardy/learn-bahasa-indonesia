@@ -65,14 +65,23 @@ export function useProgress() {
     setProgress((p) => applyQuizAnswer(p, correct, wordId))
   }, [])
 
-  const recordGrammarAnswer = useCallback((correct: boolean) => {
-    setProgress((p) => ({
-      ...p,
-      grammarStats: {
+  const recordGrammarAnswer = useCallback((correct: boolean, topic?: string) => {
+    setProgress((p) => {
+      const grammarStats = {
         correct: p.grammarStats.correct + (correct ? 1 : 0),
         total: p.grammarStats.total + 1,
-      },
-    }))
+      }
+      if (!topic) return { ...p, grammarStats }
+      const prev = p.grammarByTopic[topic] ?? { correct: 0, total: 0 }
+      return {
+        ...p,
+        grammarStats,
+        grammarByTopic: {
+          ...p.grammarByTopic,
+          [topic]: { correct: prev.correct + (correct ? 1 : 0), total: prev.total + 1 },
+        },
+      }
+    })
   }, [])
 
   const markSentenceSolved = useCallback((sentenceId: string) => {
