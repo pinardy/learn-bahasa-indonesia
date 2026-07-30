@@ -1,88 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { NewsArticle, Word, WordStatus } from '../types'
 import { fetchNews, NEWS_SOURCES, SAMPLE_ARTICLES, type NewsSource } from '../services/news'
-import { STORIES, STORY_QUESTIONS } from '../data/stories'
-import { StoryQuiz } from './StoryQuiz'
+import { STORIES } from '../data/stories'
 import { translateIdToEn } from '../services/translate'
+import { cleanWord, computeReadability, sentenceContaining } from '../services/readability'
 import { WORDS } from '../data/vocabulary'
-import { SpeakButton } from './SpeakButton'
-
-const LOOKUP_FAILED = '(translation unavailable)'
-
-// High-frequency Indonesian function/grammar words — the "glue" that fills any
-// text and that the Grammar tab teaches (yang, di/ke/dari, tidak, sudah/akan…).
-// Counted toward readability so the score reflects real text coverage, not just
-// content words from the flashcard list.
-const COMMON_WORDS = new Set([
-  'yang', 'di', 'ke', 'dari', 'dan', 'atau', 'ini', 'itu', 'untuk', 'dengan',
-  'pada', 'dalam', 'adalah', 'akan', 'sudah', 'telah', 'sedang', 'masih', 'tidak',
-  'bukan', 'belum', 'juga', 'saja', 'hanya', 'sangat', 'lebih', 'paling', 'karena',
-  'jika', 'kalau', 'tetapi', 'tapi', 'namun', 'saat', 'ketika', 'setelah', 'sebelum',
-  'oleh', 'para', 'sebagai', 'agar', 'bahwa', 'ada', 'ia', 'nya', 'seorang', 'sebuah',
-  'banyak', 'semua', 'bisa', 'dapat', 'harus', 'ingin', 'menjadi', 'tersebut', 'lewat',
-])
-
-interface Translation {
-  status: 'loading' | 'done' | 'error'
-  title?: string
-  snippet?: string
-}
-
-interface WordLookup {
-  articleId: string
-  word: string
-  translation: string | null // null while loading
-}
+import {
+  ArticleCard,
+  LOOKUP_FAILED,
+  type Translation,
+  type WordLookup,
+} from './ArticleCard'
 
 interface NewsProps {
   savedWords: Word[]
   wordStatus: Record<string, WordStatus>
   onSaveWord: (word: Word) => void
-}
-
-/** Find the sentence within a snippet that contains the given word */
-function sentenceContaining(text: string, word: string): string | undefined {
-  const lower = word.toLowerCase()
-  return text
-    .split(/(?<=[.!?])\s+/)
-    .find((s) => s.toLowerCase().includes(lower))
-    ?.trim()
-}
-
-function cleanWord(token: string): string {
-  return token.replace(/[.,!?;:"'()[\]«»„“”%–—]/g, '')
-}
-
-function NewsThumb({ src }: { src: string }) {
-  const [loaded, setLoaded] = useState(false)
-  return (
-    <span className="news-thumb-wrap">
-      <img
-        className={`news-thumb ${loaded ? 'news-thumb-loaded' : ''}`}
-        src={src}
-        alt=""
-        loading="lazy"
-        onLoad={() => setLoaded(true)}
-        ref={(img) => {
-          // cached images can finish before React attaches onLoad
-          if (img?.complete && img.naturalWidth > 0) setLoaded(true)
-        }}
-      />
-    </span>
-  )
-}
-
-function formatDate(iso?: string): string | null {
-  if (!iso) return null
-  const date = new Date(iso)
-  if (isNaN(date.getTime())) return null
-  return date.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 const PAGE_SIZE = 10
@@ -214,45 +147,11 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
     })
   }
 
-  // Share of each article's words that are in your vocabulary (known + learning +
-  // saved), as a rough readability estimate — consistent with the word highlighting.
-  // Memoized per article; only recomputes when the article list or your vocabulary
-  // changes, not on every expand/lookup/translation re-render. Articles with no
-  // familiar-word data are absent from the map (no badge), so it isn't 0% for everyone.
   const displayed = readingMode === 'stories' ? STORIES : articles
-
-  const readabilityByArticle = useMemo(() => {
-    const scores = new Map<string, number>()
-    if (statusByWord.size === 0) return scores
-    for (const article of displayed) {
-      const tokens = `${article.title} ${article.snippet}`
-        .split(/\s+/)
-        .map((t) => cleanWord(t).toLowerCase())
-        .filter((t) => /[a-z]/.test(t))
-      if (tokens.length === 0) continue
-      const familiar = tokens.filter((t) => statusByWord.has(t) || COMMON_WORDS.has(t)).length
-      scores.set(article.id, Math.round((familiar / tokens.length) * 100))
-    }
-    return scores
-  }, [displayed, statusByWord])
-
-  const renderTappableText = (article: NewsArticle, text: string) =>
-    text.split(/(\s+)/).map((token, i) => {
-      if (!/\S/.test(token)) return token
-      const status = statusByWord.get(cleanWord(token).toLowerCase())
-      return (
-        <button
-          key={i}
-          className={`news-word ${status ? `news-word-${status}` : ''}`}
-          onClick={(e) => {
-            e.stopPropagation()
-            void lookupWord(article.id, token)
-          }}
-        >
-          {token}
-        </button>
-      )
-    })
+  const readabilityByArticle = useMemo(
+    () => computeReadability(displayed, statusByWord),
+    [displayed, statusByWord]
+  )
 
   return (
     <div className="news">
@@ -324,108 +223,33 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
         </div>
       ) : (
         <ul className="news-list">
-          {displayed.slice(0, readingMode === 'stories' ? displayed.length : visibleCount).map((article) => {
-            const expanded = expandedId === article.id
-            const tx = translations[article.id]
-            const activeLookup = lookup?.articleId === article.id ? lookup : null
-            const score = readabilityByArticle.get(article.id) ?? null
-            // real news is dense, so a learner's coverage sits low; calibrate the
-            // colour scale to that range rather than to an idealised 60/30 split
-            const band = score === null ? '' : score >= 45 ? 'high' : score >= 20 ? 'mid' : 'low'
-            return (
-              <li key={article.id} className={`news-item ${expanded ? 'news-item-expanded' : ''}`}>
-                <button className="news-item-head" onClick={() => toggleExpand(article)}>
-                  {article.image && <NewsThumb src={article.image} />}
-                  <span className="news-head-text">
-                    <span className="news-title">{article.title}</span>
-                    <span className="news-meta">
-                      {score !== null && (
-                        <span
-                          className={`news-score news-score-${band}`}
-                          title="Share of this article's words that are in your vocabulary"
-                        >
-                          📊 {score}% familiar
-                        </span>
-                      )}
-                      {formatDate(article.date) ??
-                        (readingMode === 'stories'
-                          ? 'Beginner story'
-                          : article.sampleEnglish
-                            ? 'Practice article'
-                            : '')}
-                      <span className="news-expand-hint">{expanded ? '▲ close' : '▼ read'}</span>
-                    </span>
-                  </span>
-                </button>
-
-                {expanded && (
-                  <div className="news-body">
-                    <p className="news-snippet">
-                      {article.snippet
-                        ? renderTappableText(article, article.snippet)
-                        : 'No summary available for this article.'}
-                    </p>
-
-                    {activeLookup && (
-                      <div className="news-word-lookup">
-                        <strong>{activeLookup.word}</strong>
-                        <SpeakButton text={activeLookup.word} size="sm" />
-                        <span> → {activeLookup.translation ?? '…'}</span>
-                        {activeLookup.translation &&
-                          activeLookup.translation !== LOOKUP_FAILED &&
-                          (isInVocabulary(activeLookup.word) ? (
-                            <span className="lookup-saved-note">✓ in your vocabulary</span>
-                          ) : (
-                            <button
-                              className="lookup-save-btn"
-                              disabled={saving}
-                              onClick={() => void saveLookup(activeLookup, article)}
-                            >
-                              {saving ? 'Saving…' : '＋ Save word'}
-                            </button>
-                          ))}
-                      </div>
-                    )}
-
-                    {tx?.status === 'done' ? (
-                      <div className="news-translation">
-                        <span className="news-translation-label">English</span>
-                        <p className="news-translation-title">{tx.title}</p>
-                        {tx.snippet && <p>{tx.snippet}</p>}
-                      </div>
-                    ) : (
-                      <button
-                        className="btn btn-primary btn-small"
-                        onClick={() => void showEnglish(article)}
-                        disabled={tx?.status === 'loading'}
-                      >
-                        {tx?.status === 'loading'
-                          ? 'Translating…'
-                          : tx?.status === 'error'
-                            ? 'Translation failed — retry'
-                            : 'Show English translation'}
-                      </button>
-                    )}
-
-                    {STORY_QUESTIONS[article.id] && (
-                      <StoryQuiz questions={STORY_QUESTIONS[article.id]} />
-                    )}
-
-                    {article.link && (
-                      <a
-                        className="news-link"
-                        href={article.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Read full article on {source.name} ↗
-                      </a>
-                    )}
-                  </div>
-                )}
-              </li>
-            )
-          })}
+          {displayed
+            .slice(0, readingMode === 'stories' ? displayed.length : visibleCount)
+            .map((article) => (
+              <ArticleCard
+                key={article.id}
+                article={article}
+                expanded={expandedId === article.id}
+                score={readabilityByArticle.get(article.id) ?? null}
+                fallbackMeta={
+                  readingMode === 'stories'
+                    ? 'Beginner story'
+                    : article.sampleEnglish
+                      ? 'Practice article'
+                      : ''
+                }
+                sourceName={source.name}
+                statusByWord={statusByWord}
+                translation={translations[article.id]}
+                activeLookup={lookup?.articleId === article.id ? lookup : null}
+                saving={saving}
+                isInVocabulary={isInVocabulary}
+                onToggle={() => toggleExpand(article)}
+                onTapWord={(token) => void lookupWord(article.id, token)}
+                onSaveLookup={(activeLookup) => void saveLookup(activeLookup, article)}
+                onShowEnglish={() => void showEnglish(article)}
+              />
+            ))}
         </ul>
       )}
 

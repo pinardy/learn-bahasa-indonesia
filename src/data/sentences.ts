@@ -37,4 +37,16 @@ export const SENTENCES: Sentence[] = [
   { id: 's28', indonesian: 'Teman saya suka minum kopi tanpa gula', english: 'My friend likes to drink coffee without sugar', level: 3 },
   { id: 's29', indonesian: 'Kami menonton film bagus di kota kemarin', english: 'We watched a good movie in the city yesterday', level: 3 },
   { id: 's30', indonesian: 'Cuaca hari ini lebih dingin dari kemarin', english: 'The weather today is colder than yesterday', level: 3 },
+
+  // Level 4 — joined sentences with conjunctions (karena, tetapi, kalau, dan, atau)
+  { id: 's31', indonesian: 'Saya minum teh karena kopi sudah habis', english: 'I drink tea because the coffee is finished', level: 4 },
+  { id: 's32', indonesian: 'Dia mau datang tetapi hari ini hujan', english: 'He wants to come but today it is raining', level: 4 },
+  { id: 's33', indonesian: 'Kalau hujan kita tidak pergi ke pantai', english: 'If it rains we do not go to the beach', level: 4 },
+  { id: 's34', indonesian: 'Saya suka kopi dan adik saya suka teh', english: 'I like coffee and my younger sibling likes tea', level: 4 },
+  { id: 's35', indonesian: 'Kamu mau makan di rumah atau di restoran', english: 'Do you want to eat at home or at a restaurant', level: 4 },
+  { id: 's36', indonesian: 'Ibu pergi ke pasar karena tidak ada sayur', english: 'Mother goes to the market because there are no vegetables', level: 4 },
+  { id: 's37', indonesian: 'Saya lelah tetapi saya harus bekerja', english: 'I am tired but I have to work', level: 4 },
+  { id: 's38', indonesian: 'Kami belajar bahasa Indonesia karena kami suka Indonesia', english: 'We learn Indonesian because we like Indonesia', level: 4 },
+  { id: 's39', indonesian: 'Kalau kamu lapar kamu bisa makan nasi goreng', english: 'If you are hungry you can eat fried rice', level: 4 },
+  { id: 's40', indonesian: 'Dia tidak datang karena anaknya sakit', english: 'He does not come because his child is sick', level: 4 },
 ]
