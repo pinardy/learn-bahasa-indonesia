@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { CategoryId, SrsCard, Word, WordStatus } from '../types'
 import { CATEGORIES, SAVED_CATEGORY, WORDS } from '../data/vocabulary'
 import { shuffle } from '../utils'
@@ -28,6 +28,14 @@ export function Flashcards({
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
 
+  // Swipe-to-grade: drag the card right ("I know this") or left ("still
+  // learning"). A tap still flips; a mostly-vertical drag is left to the page.
+  const [dragX, setDragX] = useState(0)
+  const [leaving, setLeaving] = useState(false)
+  const dragStart = useRef<{ x: number; y: number } | null>(null)
+  const didSwipe = useRef(false)
+  const SWIPE_THRESHOLD = 90
+
   const allWords = useMemo(() => [...WORDS, ...savedWords], [savedWords])
   const categories = savedWords.length > 0 ? [...CATEGORIES, SAVED_CATEGORY] : CATEGORIES
   const reviewCount = useMemo(() => dueWords(allWords, srs).length, [allWords, srs])
@@ -56,6 +64,50 @@ export function Flashcards({
     } else {
       setIndex(index + 1)
     }
+  }
+
+  // Fly the card off-screen in the swipe direction, then grade + advance.
+  const commitSwipe = (remembered: boolean) => {
+    setLeaving(true)
+    setDragX(remembered ? 520 : -520)
+    window.setTimeout(() => {
+      advance(remembered)
+      setLeaving(false)
+      setDragX(0)
+    }, 180)
+  }
+
+  const onCardPointerDown = (e: React.PointerEvent) => {
+    if (leaving) return
+    dragStart.current = { x: e.clientX, y: e.clientY }
+    didSwipe.current = false
+    // keep receiving move/up even if the finger leaves the card during a swipe
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+  }
+  const onCardPointerMove = (e: React.PointerEvent) => {
+    const start = dragStart.current
+    if (!start) return
+    const dx = e.clientX - start.x
+    const dy = e.clientY - start.y
+    // let the page scroll if the gesture is mostly vertical
+    if (Math.abs(dy) > Math.abs(dx)) return
+    if (Math.abs(dx) > 10) didSwipe.current = true
+    setDragX(dx)
+  }
+  const onCardPointerUp = (e: React.PointerEvent) => {
+    const start = dragStart.current
+    dragStart.current = null
+    if (!start) return
+    // read the offset from the event, not from React state (which may not have
+    // committed the latest drag value yet by the time pointerup fires)
+    const dx = e.clientX - start.x
+    if (dx > SWIPE_THRESHOLD) commitSwipe(true)
+    else if (dx < -SWIPE_THRESHOLD) commitSwipe(false)
+    else setDragX(0)
+  }
+  const onCardPointerCancel = () => {
+    dragStart.current = null
+    setDragX(0)
   }
 
   const categorySelect = (
@@ -110,7 +162,22 @@ export function Flashcards({
 
       <div
         className={`flashcard ${flipped ? 'flashcard-flipped' : ''}`}
-        onClick={() => setFlipped(!flipped)}
+        style={{
+          transform: `translateX(${dragX}px) rotate(${dragX * 0.03}deg)`,
+          transition: dragStart.current && !leaving ? 'none' : 'transform 0.18s ease',
+          opacity: leaving ? 0 : 1,
+        }}
+        onClick={() => {
+          if (didSwipe.current) {
+            didSwipe.current = false
+            return
+          }
+          setFlipped(!flipped)
+        }}
+        onPointerDown={onCardPointerDown}
+        onPointerMove={onCardPointerMove}
+        onPointerUp={onCardPointerUp}
+        onPointerCancel={onCardPointerCancel}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -120,12 +187,26 @@ export function Flashcards({
           }
         }}
       >
+        <span
+          className="swipe-hint swipe-hint-know"
+          style={{ opacity: Math.min(Math.max(dragX, 0) / SWIPE_THRESHOLD, 1) }}
+          aria-hidden="true"
+        >
+          I know this ✓
+        </span>
+        <span
+          className="swipe-hint swipe-hint-learn"
+          style={{ opacity: Math.min(Math.max(-dragX, 0) / SWIPE_THRESHOLD, 1) }}
+          aria-hidden="true"
+        >
+          Still learning
+        </span>
         <div className="flashcard-inner" key={`${deckSeed}-${index}`}>
           <div className="flashcard-face flashcard-front">
             <span className="flashcard-lang">Bahasa Indonesia</span>
             <span className="flashcard-word">{word.indonesian}</span>
             <SpeakButton text={word.indonesian} size="lg" className="flashcard-speak" />
-            <span className="flashcard-hint">Tap to reveal</span>
+            <span className="flashcard-hint">Tap to flip · swipe to grade</span>
           </div>
           <div className="flashcard-face flashcard-back">
             <span className="flashcard-lang">English</span>

@@ -52,6 +52,8 @@ body {
   background: var(--cream);
   color: var(--ink);
   line-height: 1.5;
+  /* keep long unbroken strings from forcing horizontal scroll on narrow phones */
+  overflow-wrap: break-word;
 }
 
 button {

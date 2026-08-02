@@ -5,13 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/pwa-192.png" />
     <meta name="theme-color" content="#ce1126" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Belajar!" />
     <title>Belajar! — Learn Bahasa Indonesia</title>
     <script>
       // set the theme before first paint to avoid a light-mode flash
-      document.documentElement.dataset.theme =
+      var theme =
         localStorage.getItem('bahasa-theme') ??
         (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      document.documentElement.dataset.theme = theme
+      // keep the browser chrome (address/status bar) in sync with the theme
+      document
+        .querySelector('meta[name="theme-color"]')
+        .setAttribute('content', theme === 'dark' ? '#1c1917' : '#ce1126')
     </script>
   </head>
   <body>
