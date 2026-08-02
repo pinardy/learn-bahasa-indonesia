@@ -436,11 +436,40 @@
 }
 
 .flashcard {
+  position: relative;
   width: min(100%, 440px);
   height: 280px;
   -webkit-perspective: 1200px;
   perspective: 1200px;
   cursor: pointer;
+  /* own horizontal drags (swipe-to-grade); leave vertical scroll to the page */
+  touch-action: pan-y;
+  /* don't select the card text while swiping */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Directional grade labels that fade in as the card is dragged. */
+.swipe-hint {
+  position: absolute;
+  top: 14px;
+  z-index: 2;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #fff;
+  pointer-events: none;
+}
+
+.swipe-hint-know {
+  right: 14px;
+  background: var(--green);
+}
+
+.swipe-hint-learn {
+  left: 14px;
+  background: var(--amber);
 }
 
 .flashcard-inner {
@@ -1014,7 +1043,7 @@
 .back-to-top {
   position: fixed;
   right: 24px;
-  bottom: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -1251,14 +1280,19 @@
 .news-word {
   background: none;
   border: none;
-  padding: 0;
+  padding: 1px 3px;
   font: inherit;
   color: inherit;
   border-radius: 4px;
+  /* persistent cue that words are tappable (hover is invisible on touch) */
+  text-decoration: underline dotted;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
   transition: background 0.1s;
 }
 
-.news-word:hover {
+.news-word:hover,
+.news-word:active {
   background: var(--amber-soft);
   color: var(--amber);
 }
@@ -1320,6 +1354,22 @@
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--green);
+}
+
+.lookup-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.lookup-close:hover {
+  color: var(--ink);
+  background: var(--border);
 }
 
 .vocab-remove {
@@ -1962,5 +2012,45 @@
 
   .hero h1 {
     font-size: 1.7rem;
+  }
+}
+
+/* Touch devices: enlarge the most-used controls to a ~44px tap target.
+   Placed last so it overrides the width-based nav shrink above on phones. */
+@media (pointer: coarse) {
+  .nav-btn {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .pill {
+    padding: 10px 16px;
+  }
+
+  .sentence-dot {
+    width: 40px;
+    height: 40px;
+  }
+
+  .vocab-remove {
+    padding: 10px;
+  }
+
+  .lookup-save-btn {
+    padding: 8px 16px;
+  }
+
+  .speak-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 8px;
   }
 }

@@ -247,6 +247,7 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
                 onToggle={() => toggleExpand(article)}
                 onTapWord={(token) => void lookupWord(article.id, token)}
                 onSaveLookup={(activeLookup) => void saveLookup(activeLookup, article)}
+                onCloseLookup={() => setLookup(null)}
                 onShowEnglish={() => void showEnglish(article)}
               />
             ))}

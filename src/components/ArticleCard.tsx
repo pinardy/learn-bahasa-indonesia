@@ -68,6 +68,7 @@ interface ArticleCardProps {
   onToggle: () => void
   onTapWord: (token: string) => void
   onSaveLookup: (lookup: WordLookup) => void
+  onCloseLookup: () => void
   onShowEnglish: () => void
 }
 
@@ -86,6 +87,7 @@ export function ArticleCard({
   onToggle,
   onTapWord,
   onSaveLookup,
+  onCloseLookup,
   onShowEnglish,
 }: ArticleCardProps) {
   // every word is tappable for a lookup, tinted by learning status
@@ -152,6 +154,9 @@ export function ArticleCard({
                     {saving ? 'Saving…' : '＋ Save word'}
                   </button>
                 ))}
+              <button className="lookup-close" aria-label="Close" onClick={onCloseLookup}>
+                ✕
+              </button>
             </div>
           )}
 
