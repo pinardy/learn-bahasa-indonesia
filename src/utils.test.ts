@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { accuracyPct, levenshtein, sample, shuffle } from './utils'
+import { accuracyPct, buildOptions, levenshtein, sample, shuffle } from './utils'
 
 describe('levenshtein', () => {
   it('is 0 for identical strings', () => {
@@ -53,5 +53,32 @@ describe('accuracyPct', () => {
   it('rounds to a whole percentage', () => {
     expect(accuracyPct({ correct: 2, total: 3 })).toBe(67)
     expect(accuracyPct({ correct: 0, total: 4 })).toBe(0)
+  })
+})
+
+describe('buildOptions', () => {
+  it('includes the answer plus distinct distractors up to the size', () => {
+    const opts = buildOptions('a', ['b', 'c', 'd', 'e'])
+    expect(opts).toHaveLength(4)
+    expect(opts).toContain('a')
+    expect(new Set(opts).size).toBe(4)
+  })
+  it('skips candidates equal to the answer or already chosen', () => {
+    const opts = buildOptions('a', ['a', 'b', 'b', 'c', 'd'])
+    expect([...opts].sort()).toEqual(['a', 'b', 'c', 'd'])
+  })
+  it('prefers earlier candidates', () => {
+    expect([...buildOptions('a', ['b', 'c', 'd', 'x', 'y'])].sort()).toEqual(['a', 'b', 'c', 'd'])
+  })
+  it('returns fewer options when candidates run out', () => {
+    expect(buildOptions('a', ['b'])).toHaveLength(2)
+  })
+  it('accepts a lazy iterable and stops consuming once full', () => {
+    let pulled = 0
+    function* gen() {
+      for (;;) yield `x${pulled++}`
+    }
+    expect(buildOptions('a', gen(), 3)).toHaveLength(3)
+    expect(pulled).toBe(2)
   })
 })

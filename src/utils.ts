@@ -7,6 +7,23 @@ export function shuffle<T>(array: T[]): T[] {
   return result
 }
 
+/**
+ * A multiple-choice option set: the answer plus up to `size - 1` distinct
+ * distractors taken in order from `candidates`, shuffled together. Candidates
+ * equal to the answer (or to each other) are skipped, so callers can pass a
+ * loosely-filtered pool. Order matters: put preferred distractors first.
+ */
+export function buildOptions(answer: string, candidates: Iterable<string>, size = 4): string[] {
+  const options = new Set([answer])
+  if (options.size < size) {
+    for (const c of candidates) {
+      options.add(c)
+      if (options.size >= size) break
+    }
+  }
+  return shuffle([...options])
+}
+
 export function sample<T>(array: T[], count: number): T[] {
   return shuffle(array).slice(0, count)
 }

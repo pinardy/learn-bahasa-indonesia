@@ -1,5 +1,5 @@
 import { SCENARIOS, type Phrase } from '../data/phrases'
-import { sample, shuffle } from '../utils'
+import { buildOptions, sample, shuffle } from '../utils'
 import { AnswerBar, ChoiceOptions, QuizProgress, QuizResult } from './QuizUI'
 import { useQuizRound } from '../hooks/useQuizRound'
 import { SpeakButton } from './SpeakButton'
@@ -14,15 +14,15 @@ interface Question {
 const ALL_PHRASES = SCENARIOS.flatMap((s) => s.phrases)
 
 function makeRound(): Question[] {
-  return sample(ALL_PHRASES, ROUND_LENGTH).map((phrase) => {
-    const options = new Set<string>([phrase.english])
-    for (const p of shuffle(ALL_PHRASES)) {
-      if (options.size >= 4) break
-      if (p.indonesian === phrase.indonesian) continue
-      options.add(p.english)
-    }
-    return { phrase, options: shuffle([...options]) }
-  })
+  return sample(ALL_PHRASES, ROUND_LENGTH).map((phrase) => ({
+    phrase,
+    options: buildOptions(
+      phrase.english,
+      shuffle(ALL_PHRASES)
+        .filter((p) => p.indonesian !== phrase.indonesian)
+        .map((p) => p.english)
+    ),
+  }))
 }
 
 /** Quiz over the phrasebook: read (or hear) the Indonesian, pick the meaning. */

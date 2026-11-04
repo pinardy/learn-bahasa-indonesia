@@ -1,6 +1,6 @@
-import type { CategoryId } from '../types'
+import type { CategoryId, Word } from '../types'
 import { CATEGORIES, WORDS } from '../data/vocabulary'
-import { sample, shuffle } from '../utils'
+import { buildOptions, sample, shuffle } from '../utils'
 import { AnswerBar, ChoiceOptions, QuizProgress } from './QuizUI'
 import { useQuizRound } from '../hooks/useQuizRound'
 import { SpeakButton } from './SpeakButton'
@@ -19,19 +19,17 @@ function makeQuestions(categoryId: CategoryId): Question[] {
   const catWords = WORDS.filter((w) => w.category === categoryId)
   return sample(catWords, Math.min(QUIZ_LENGTH, catWords.length)).map((word) => {
     const direction = Math.random() < 0.5 ? 'id-en' : 'en-id'
-    const answer = direction === 'id-en' ? word.english : word.indonesian
+    const text = (w: Word) => (direction === 'id-en' ? w.english : w.indonesian)
+    const answer = text(word)
     // same-category distractors first, so the checkpoint really tests the unit
-    const options = new Set<string>([answer])
-    for (const w of [...shuffle(catWords), ...shuffle(WORDS)]) {
-      if (options.size >= 4) break
-      if (w.id === word.id) continue
-      options.add(direction === 'id-en' ? w.english : w.indonesian)
-    }
+    const candidates = [...shuffle(catWords), ...shuffle(WORDS)]
+      .filter((w) => w.id !== word.id)
+      .map(text)
     return {
       prompt: direction === 'id-en' ? word.indonesian : word.english,
       indonesian: word.indonesian,
       answer,
-      options: shuffle([...options]),
+      options: buildOptions(answer, candidates),
     }
   })
 }
