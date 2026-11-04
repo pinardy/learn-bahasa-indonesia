@@ -2,10 +2,9 @@ import { useMemo, useState } from 'react'
 import type { CategoryId } from './types'
 import { useProgress } from './hooks/useProgress'
 import { useNavOrder } from './hooks/useNavOrder'
-import { usePersistedState } from './hooks/usePersistedState'
+import { useHashView } from './hooks/useHashView'
 import { useTheme } from './hooks/useTheme'
-import { STORAGE_KEYS } from './storage'
-import { NAV_ITEMS, VIEWS, isView, type NavItem, type View } from './views'
+import { NAV_ITEMS, VIEWS, type NavItem, type View } from './views'
 import { Home } from './components/Home'
 import { Flashcards } from './components/Flashcards'
 import type { DeckFilter } from './decks'
@@ -21,14 +20,16 @@ import { dueCount } from './srs'
 import './App.css'
 
 export default function App() {
-  const [view, setView] = usePersistedState<View>(STORAGE_KEYS.view, (saved) =>
-    isView(saved) ? saved : 'home'
-  )
   // A deck to open Flashcards with (review from the home banner, or a
   // category from the learning path); cleared on normal navigation.
   const [deckLaunch, setDeckLaunch] = useState<DeckFilter | null>(null)
   // When set, a learning-path checkpoint quiz overlays the current view.
   const [checkpoint, setCheckpoint] = useState<CategoryId | null>(null)
+  const clearLaunch = () => {
+    setDeckLaunch(null)
+    setCheckpoint(null)
+  }
+  const [view, setView] = useHashView(clearLaunch)
 
   const { theme, toggleTheme } = useTheme()
   const { navOrder, navRef, navHasMore, updateNavFade, dragView, wasDrag, pressProps } =
@@ -57,8 +58,7 @@ export default function App() {
 
   // navigate normally (resets any pending deck launch or checkpoint)
   const navigate = (v: View) => {
-    setDeckLaunch(null)
-    setCheckpoint(null)
+    clearLaunch()
     setView(v)
   }
 
