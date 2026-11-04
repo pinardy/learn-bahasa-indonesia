@@ -1,0 +1,132 @@
+/* ===== Flashcards ===== */
+.flashcards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.flashcards .category-pills {
+  justify-content: center;
+}
+
+.deck-position {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flashcard {
+  position: relative;
+  width: min(100%, 440px);
+  height: 280px;
+  -webkit-perspective: 1200px;
+  perspective: 1200px;
+  cursor: pointer;
+  /* own horizontal drags (swipe-to-grade); leave vertical scroll to the page */
+  touch-action: pan-y;
+  /* don't select the card text while swiping */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Directional grade labels that fade in as the card is dragged. */
+.swipe-hint {
+  position: absolute;
+  top: 14px;
+  z-index: 2;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #fff;
+  pointer-events: none;
+}
+
+.swipe-hint-know {
+  right: 14px;
+  background: var(--green);
+}
+
+.swipe-hint-learn {
+  left: 14px;
+  background: var(--amber);
+}
+
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  -webkit-transition: -webkit-transform 0.5s;
+  transition: transform 0.5s;
+}
+
+.flashcard-flipped .flashcard-inner {
+  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
+}
+
+.flashcard-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+}
+
+.flashcard-back {
+  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
+  background: var(--card-warm);
+}
+
+.flashcard-lang {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--red);
+}
+
+.flashcard-word {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.flashcard-hint {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.flashcard-example {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  border-top: 1px dashed var(--border);
+  padding-top: 10px;
+  margin-top: 4px;
+}
+
+.flashcard-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+  min-height: 48px;
+}

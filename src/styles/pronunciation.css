@@ -1,0 +1,51 @@
+/* ===== Pronunciation guide ===== */
+.sound-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sound-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.sound-letters {
+  min-width: 96px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--red);
+  flex-shrink: 0;
+}
+
+.sound-desc {
+  flex: 1;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+.sound-example {
+  white-space: nowrap;
+  font-size: 0.92rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .sound-row {
+    flex-wrap: wrap;
+    gap: 4px 14px;
+  }
+
+  .sound-desc {
+    flex-basis: 100%;
+    order: 3;
+  }
+}

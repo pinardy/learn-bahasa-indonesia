@@ -1,0 +1,42 @@
+/* ===== Speaking practice ===== */
+.speaking-target {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.speaking-meaning {
+  color: var(--ink-soft);
+  margin: 4px 0 0;
+}
+
+.mic-btn {
+  background: var(--green);
+}
+
+.mic-btn:hover {
+  background: #14603b;
+}
+
+.mic-listening {
+  background: var(--red);
+  animation: mic-pulse 1s ease infinite;
+}
+
+@keyframes mic-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.speaking-status {
+  text-align: center;
+  color: var(--ink-soft);
+  min-height: 24px;
+  margin: 12px 0 4px;
+}
