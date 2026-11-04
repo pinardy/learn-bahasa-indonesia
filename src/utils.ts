@@ -28,3 +28,9 @@ export function levenshtein(a: string, b: string): number {
   }
   return prev[b.length]
 }
+
+/** Whole-number accuracy percentage, or null when nothing has been answered yet. */
+export function accuracyPct(stats: { correct: number; total: number } | undefined): number | null {
+  if (!stats || stats.total <= 0) return null
+  return Math.round((stats.correct / stats.total) * 100)
+}

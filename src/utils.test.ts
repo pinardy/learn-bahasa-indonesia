@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { levenshtein, sample, shuffle } from './utils'
+import { accuracyPct, levenshtein, sample, shuffle } from './utils'
 
 describe('levenshtein', () => {
   it('is 0 for identical strings', () => {
@@ -42,5 +42,16 @@ describe('sample', () => {
 
   it('returns the whole array when count exceeds its length', () => {
     expect(sample([1, 2], 10)).toHaveLength(2)
+  })
+})
+
+describe('accuracyPct', () => {
+  it('is null before anything is answered', () => {
+    expect(accuracyPct(undefined)).toBeNull()
+    expect(accuracyPct({ correct: 0, total: 0 })).toBeNull()
+  })
+  it('rounds to a whole percentage', () => {
+    expect(accuracyPct({ correct: 2, total: 3 })).toBe(67)
+    expect(accuracyPct({ correct: 0, total: 4 })).toBe(0)
   })
 })

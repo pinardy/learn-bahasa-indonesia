@@ -11,6 +11,7 @@ import {
   type Translation,
   type WordLookup,
 } from './ArticleCard'
+import { usePaged } from '../hooks/usePaged'
 
 interface NewsProps {
   savedWords: Word[]
@@ -24,13 +25,14 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
   const [readingMode, setReadingMode] = useState<'news' | 'stories'>('news')
   const [source, setSource] = useState<NewsSource>(NEWS_SOURCES[0])
   const [articles, setArticles] = useState<NewsArticle[]>([])
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [loading, setLoading] = useState(true)
   const [offline, setOffline] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [translations, setTranslations] = useState<Record<string, Translation>>({})
   const [lookup, setLookup] = useState<WordLookup | null>(null)
   const [saving, setSaving] = useState(false)
+  const pagedArticles = usePaged(articles, PAGE_SIZE)
+  const resetPaging = pagedArticles.reset
 
   // learning status per lowercase Indonesian word, for highlighting in snippets;
   // saved words without an explicit status count as "learning"
@@ -52,7 +54,7 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
     setOffline(false)
     setExpandedId(null)
     setLookup(null)
-    setVisibleCount(PAGE_SIZE)
+    resetPaging()
     try {
       const fetched = await fetchNews(src)
       if (fetched.length === 0) throw new Error('No articles')
@@ -63,7 +65,7 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [resetPaging])
 
   useEffect(() => {
     void load(source)
@@ -223,43 +225,38 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
         </div>
       ) : (
         <ul className="news-list">
-          {displayed
-            .slice(0, readingMode === 'stories' ? displayed.length : visibleCount)
-            .map((article) => (
-              <ArticleCard
-                key={article.id}
-                article={article}
-                expanded={expandedId === article.id}
-                score={readabilityByArticle.get(article.id) ?? null}
-                fallbackMeta={
-                  readingMode === 'stories'
-                    ? 'Beginner story'
-                    : article.sampleEnglish
-                      ? 'Practice article'
-                      : ''
-                }
-                sourceName={source.name}
-                statusByWord={statusByWord}
-                translation={translations[article.id]}
-                activeLookup={lookup?.articleId === article.id ? lookup : null}
-                saving={saving}
-                isInVocabulary={isInVocabulary}
-                onToggle={() => toggleExpand(article)}
-                onTapWord={(token) => void lookupWord(article.id, token)}
-                onSaveLookup={(activeLookup) => void saveLookup(activeLookup, article)}
-                onCloseLookup={() => setLookup(null)}
-                onShowEnglish={() => void showEnglish(article)}
-              />
-            ))}
+          {(readingMode === 'stories' ? STORIES : pagedArticles.visible).map((article) => (
+            <ArticleCard
+              key={article.id}
+              article={article}
+              expanded={expandedId === article.id}
+              score={readabilityByArticle.get(article.id) ?? null}
+              fallbackMeta={
+                readingMode === 'stories'
+                  ? 'Beginner story'
+                  : article.sampleEnglish
+                    ? 'Practice article'
+                    : ''
+              }
+              sourceName={source.name}
+              statusByWord={statusByWord}
+              translation={translations[article.id]}
+              activeLookup={lookup?.articleId === article.id ? lookup : null}
+              saving={saving}
+              isInVocabulary={isInVocabulary}
+              onToggle={() => toggleExpand(article)}
+              onTapWord={(token) => void lookupWord(article.id, token)}
+              onSaveLookup={(activeLookup) => void saveLookup(activeLookup, article)}
+              onCloseLookup={() => setLookup(null)}
+              onShowEnglish={() => void showEnglish(article)}
+            />
+          ))}
         </ul>
       )}
 
-      {readingMode === 'news' && !loading && articles.length > visibleCount && (
-        <button
-          className="btn btn-ghost show-more"
-          onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-        >
-          Show more articles ({articles.length - visibleCount} more)
+      {readingMode === 'news' && !loading && pagedArticles.remaining > 0 && (
+        <button className="btn btn-ghost show-more" onClick={pagedArticles.showMore}>
+          Show more articles ({pagedArticles.remaining} more)
         </button>
       )}
     </div>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { CategoryId, Progress, Word, WordStatus } from '../types'
+import type { CategoryId, Progress, Word } from '../types'
 import { schedule } from '../srs'
 import { DEFAULT_PROGRESS, normalizeProgress } from '../services/progressIO'
 import { STORAGE_KEYS } from '../storage'
@@ -44,13 +44,6 @@ export function useProgress() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress))
   }, [progress])
-
-  const setWordStatus = useCallback((wordId: string, status: WordStatus) => {
-    setProgress((p) => ({
-      ...p,
-      wordStatus: { ...p.wordStatus, [wordId]: status },
-    }))
-  }, [])
 
   // A flashcard review: updates the spaced-repetition schedule and the status
   // badge together. "Remembered" keeps the existing "known" badge behaviour.
@@ -136,7 +129,6 @@ export function useProgress() {
 
   return {
     progress,
-    setWordStatus,
     reviewWord,
     recordQuizAnswer,
     recordGrammarAnswer,

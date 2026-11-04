@@ -95,19 +95,9 @@ export function normalizeProgress(parsed: unknown): Progress {
   ) as unknown as Progress
 }
 
-/** Keys that mark an object as (some version of) a progress payload. */
-const PROGRESS_KEYS = [
-  'wordStatus',
-  'quizStats',
-  'grammarStats',
-  'sentencesSolved',
-  'savedWords',
-  'srs',
-  'unitsPassed',
-]
-
+/** An object with any Progress field is (some version of) a progress payload. */
 const looksLikeProgress = (v: unknown): boolean =>
-  isObject(v) && PROGRESS_KEYS.some((k) => k in v)
+  isObject(v) && PROGRESS_FIELDS.some((k) => k in v)
 
 export function serializeProgress(progress: Progress, exportedAt: string): string {
   const backup: ProgressBackup = {

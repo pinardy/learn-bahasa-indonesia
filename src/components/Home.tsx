@@ -3,6 +3,7 @@ import type { CategoryId, Progress } from '../types'
 import { WORDS } from '../data/vocabulary'
 import { SENTENCES } from '../data/sentences'
 import { todayStr } from '../srs'
+import { accuracyPct } from '../utils'
 import {
   backupFilename,
   deserializeProgress,
@@ -62,11 +63,8 @@ export function Home({
   }
   const knownCount = Object.values(progress.wordStatus).filter((s) => s === 'known').length
   const learningCount = Object.values(progress.wordStatus).filter((s) => s === 'learning').length
-  const { correct, total } = progress.quizStats
-  const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0
-  const grammar = progress.grammarStats
-  const grammarAccuracy =
-    grammar.total > 0 ? Math.round((grammar.correct / grammar.total) * 100) : 0
+  const quizAccuracy = accuracyPct(progress.quizStats)
+  const grammarAccuracy = accuracyPct(progress.grammarStats)
 
   const activities = [
     { view: 'flashcards', emoji: '🃏', title: 'Flashcards', desc: 'Flip cards to memorize new words' },
@@ -120,11 +118,13 @@ export function Home({
           <span className="stat-label">still learning</span>
         </div>
         <div className="stat-card">
-          <span className="stat-value">{total > 0 ? `${accuracy}%` : '—'}</span>
+          <span className="stat-value">{quizAccuracy !== null ? `${quizAccuracy}%` : '—'}</span>
           <span className="stat-label">quiz accuracy</span>
         </div>
         <div className="stat-card">
-          <span className="stat-value">{grammar.total > 0 ? `${grammarAccuracy}%` : '—'}</span>
+          <span className="stat-value">
+            {grammarAccuracy !== null ? `${grammarAccuracy}%` : '—'}
+          </span>
           <span className="stat-label">grammar accuracy</span>
         </div>
         <div className="stat-card">
@@ -171,8 +171,8 @@ export function Home({
             ⬆️ Import progress
           </button>
           {(knownCount > 0 ||
-            total > 0 ||
-            grammar.total > 0 ||
+            quizAccuracy !== null ||
+            grammarAccuracy !== null ||
             progress.sentencesSolved.length > 0) && (
             <button
               className="data-btn data-btn-danger"
