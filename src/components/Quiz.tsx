@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CategoryId, SrsCard, Word } from '../types'
 import { CATEGORIES, SAVED_CATEGORY, WORDS } from '../data/vocabulary'
-import { levenshtein, sample, shuffle } from '../utils'
+import { buildOptions, levenshtein, sample, shuffle } from '../utils'
 import { dueWords } from '../srs'
 import { SpeakButton } from './SpeakButton'
 import { speak } from '../services/speech'
@@ -34,15 +34,15 @@ function makeQuestion(
 ): Question {
   const direction: Question['direction'] =
     forcedDirection ?? (Math.random() < 0.5 ? 'id-en' : 'en-id')
-  const answer = direction === 'id-en' ? word.english : word.indonesian
-  // Set dedupes distractors that share text with the answer or each other
-  const options = new Set<string>([answer])
-  for (const w of shuffle(distractorPool)) {
-    if (options.size >= 4) break
-    if (w.id === word.id) continue
-    options.add(direction === 'id-en' ? w.english : w.indonesian)
-  }
-  return { word, direction, options: shuffle([...options]), answer }
+  const text = (w: Word) => (direction === 'id-en' ? w.english : w.indonesian)
+  const answer = text(word)
+  const options = buildOptions(
+    answer,
+    shuffle(distractorPool)
+      .filter((w) => w.id !== word.id)
+      .map(text)
+  )
+  return { word, direction, options, answer }
 }
 
 /**

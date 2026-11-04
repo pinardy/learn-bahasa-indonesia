@@ -1,4 +1,4 @@
-import { shuffle } from './utils'
+import { buildOptions } from './utils'
 
 const ONES = [
   '',
@@ -87,11 +87,13 @@ function randInt(min: number, max: number): number {
   return min + Math.floor(Math.random() * (max - min + 1))
 }
 
+// Lazily generate random distractors (capped, in case they keep colliding).
+function* generate(makeDistractor: () => string, limit = 50): Generator<string> {
+  for (let i = 0; i < limit; i++) yield makeDistractor()
+}
+
 function optionsFrom(answer: string, makeDistractor: () => string): string[] {
-  const set = new Set<string>([answer])
-  let guard = 0
-  while (set.size < 4 && guard++ < 50) set.add(makeDistractor())
-  return shuffle([...set])
+  return buildOptions(answer, generate(makeDistractor))
 }
 
 /** A number question: show the numeral, choose the Indonesian words. */
