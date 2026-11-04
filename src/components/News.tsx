@@ -12,6 +12,7 @@ import {
   type WordLookup,
 } from './ArticleCard'
 import { usePaged } from '../hooks/usePaged'
+import { useWordPool } from '../hooks/useWordPool'
 
 interface NewsProps {
   savedWords: Word[]
@@ -116,10 +117,12 @@ export function News({ savedWords, wordStatus, onSaveWord }: NewsProps) {
     }
   }
 
-  const isInVocabulary = (word: string) => {
-    const lower = word.toLowerCase()
-    return [...WORDS, ...savedWords].some((w) => w.indonesian.toLowerCase() === lower)
-  }
+  const { allWords } = useWordPool(savedWords)
+  const vocabSet = useMemo(
+    () => new Set(allWords.map((w) => w.indonesian.toLowerCase())),
+    [allWords]
+  )
+  const isInVocabulary = (word: string) => vocabSet.has(word.toLowerCase())
 
   const saveLookup = async (activeLookup: WordLookup, article: NewsArticle) => {
     if (!activeLookup.translation || activeLookup.translation === LOOKUP_FAILED) return

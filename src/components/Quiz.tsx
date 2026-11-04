@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { CategoryId, SrsCard, Word } from '../types'
-import { CATEGORIES, SAVED_CATEGORY, WORDS } from '../data/vocabulary'
+import type { SrsCard, Word } from '../types'
 import { buildOptions, levenshtein, sample, shuffle } from '../utils'
-import { dueWords } from '../srs'
+import { deckWords, type DeckFilter } from '../decks'
+import { useWordPool } from '../hooks/useWordPool'
+import { DeckSelect } from './DeckSelect'
 import { SpeakButton } from './SpeakButton'
 import { speak } from '../services/speech'
 import { useQuizRound } from '../hooks/useQuizRound'
@@ -22,8 +23,6 @@ interface Question {
 }
 
 type QuizMode = 'choice' | 'typed' | 'listen'
-// Which words the quiz draws its questions from.
-type QuizPool = CategoryId | 'all' | 'review'
 
 const QUIZ_LENGTH = 10
 
@@ -61,16 +60,6 @@ function makeQuiz(
   )
 }
 
-export function poolWords(
-  pool: QuizPool,
-  allWords: Word[],
-  srs: Record<string, SrsCard>
-): Word[] {
-  if (pool === 'review') return dueWords(allWords, srs)
-  if (pool === 'all') return allWords
-  return allWords.filter((w) => w.category === pool)
-}
-
 function normalize(text: string): string {
   return text.trim().toLowerCase().replace(/\s+/g, ' ')
 }
@@ -86,17 +75,16 @@ export function gradeTypedAnswer(attempt: string, expected: string): boolean {
 }
 
 export function Quiz({ savedWords, srs, onAnswer }: QuizProps) {
-  const allWords = useMemo(() => [...WORDS, ...savedWords], [savedWords])
-  const reviewCount = useMemo(() => dueWords(allWords, srs).length, [allWords, srs])
-  const categories = savedWords.length > 0 ? [...CATEGORIES, SAVED_CATEGORY] : CATEGORIES
+  const { allWords, categories } = useWordPool(savedWords)
+  const reviewCount = useMemo(() => deckWords('review', allWords, srs).length, [allWords, srs])
 
   const [mode, setMode] = useState<QuizMode>('choice')
-  const [pool, setPool] = useState<QuizPool>('all')
+  const [pool, setPool] = useState<DeckFilter>('all')
   const [typed, setTyped] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const roundItems = (m: QuizMode, p: QuizPool) =>
-    makeQuiz(poolWords(p, allWords, srs), allWords, m === 'listen' ? 'id-en' : undefined)
+  const roundItems = (m: QuizMode, p: DeckFilter) =>
+    makeQuiz(deckWords(p, allWords, srs), allWords, m === 'listen' ? 'id-en' : undefined)
 
   const round = useQuizRound<Question>({
     makeItems: () => roundItems(mode, pool),
@@ -130,7 +118,7 @@ export function Quiz({ savedWords, srs, onAnswer }: QuizProps) {
     round.restart(roundItems(m, pool))
   }
 
-  const selectPool = (p: QuizPool) => {
+  const selectPool = (p: DeckFilter) => {
     if (p === pool) return
     setPool(p)
     setTyped('')
@@ -138,23 +126,6 @@ export function Quiz({ savedWords, srs, onAnswer }: QuizProps) {
   }
 
   const gradeTyped = (attempt: string) => gradeTypedAnswer(attempt, typedAnswer)
-
-  const poolSelect = (
-    <select
-      className="filter-select"
-      value={pool}
-      onChange={(e) => selectPool(e.target.value as QuizPool)}
-      aria-label="Choose which words to quiz"
-    >
-      {reviewCount > 0 && <option value="review">⏰ Due for review ({reviewCount})</option>}
-      <option value="all">All words</option>
-      {categories.map((c) => (
-        <option key={c.id} value={c.id}>
-          {c.emoji} {c.name}
-        </option>
-      ))}
-    </select>
-  )
 
   const modePills = (
     <div className="category-pills">
@@ -181,7 +152,13 @@ export function Quiz({ savedWords, srs, onAnswer }: QuizProps) {
 
   const controls = (
     <div className="quiz-controls">
-      {poolSelect}
+      <DeckSelect
+        value={pool}
+        onChange={selectPool}
+        categories={categories}
+        reviewCount={reviewCount}
+        ariaLabel="Choose which words to quiz"
+      />
       {modePills}
     </div>
   )

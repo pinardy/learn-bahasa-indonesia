@@ -1,11 +1,10 @@
 import { useMemo, useRef, useState } from 'react'
-import type { CategoryId, SrsCard, Word, WordStatus } from '../types'
-import { CATEGORIES, SAVED_CATEGORY, WORDS } from '../data/vocabulary'
+import type { SrsCard, Word, WordStatus } from '../types'
 import { shuffle } from '../utils'
-import { dueWords } from '../srs'
+import { deckWords, type DeckFilter } from '../decks'
+import { useWordPool } from '../hooks/useWordPool'
+import { DeckSelect } from './DeckSelect'
 import { SpeakButton } from './SpeakButton'
-
-export type DeckFilter = CategoryId | 'all' | 'review'
 
 interface FlashcardsProps {
   wordStatus: Record<string, WordStatus>
@@ -36,14 +35,13 @@ export function Flashcards({
   const didSwipe = useRef(false)
   const SWIPE_THRESHOLD = 90
 
-  const allWords = useMemo(() => [...WORDS, ...savedWords], [savedWords])
-  const categories = savedWords.length > 0 ? [...CATEGORIES, SAVED_CATEGORY] : CATEGORIES
-  const reviewCount = useMemo(() => dueWords(allWords, srs).length, [allWords, srs])
+  const { allWords, categories } = useWordPool(savedWords)
+  const reviewCount = useMemo(() => deckWords('review', allWords, srs).length, [allWords, srs])
 
   const deck = useMemo(() => {
-    if (category === 'review') return dueWords(allWords, srs)
-    const pool = category === 'all' ? allWords : allWords.filter((w) => w.category === category)
-    return shuffle(pool)
+    // review keeps due order; other decks are shuffled (reshuffled on each pass)
+    const words = deckWords(category, allWords, srs)
+    return category === 'review' ? words : shuffle(words)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, deckSeed, allWords])
 
@@ -111,20 +109,13 @@ export function Flashcards({
   }
 
   const categorySelect = (
-    <select
-      className="filter-select"
+    <DeckSelect
       value={category}
-      onChange={(e) => selectCategory(e.target.value as DeckFilter)}
-      aria-label="Choose a deck"
-    >
-      {reviewCount > 0 && <option value="review">⏰ Review ({reviewCount} due)</option>}
-      <option value="all">All words</option>
-      {categories.map((c) => (
-        <option key={c.id} value={c.id}>
-          {c.emoji} {c.name}
-        </option>
-      ))}
-    </select>
+      onChange={selectCategory}
+      categories={categories}
+      reviewCount={reviewCount}
+      ariaLabel="Choose a deck"
+    />
   )
 
   if (!word) {

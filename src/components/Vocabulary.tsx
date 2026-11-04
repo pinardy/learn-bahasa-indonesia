@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CategoryId, Word, WordStatus } from '../types'
-import { CATEGORIES, SAVED_CATEGORY, WORDS } from '../data/vocabulary'
+import { useWordPool } from '../hooks/useWordPool'
 import { SpeakButton } from './SpeakButton'
 import { usePaged } from '../hooks/usePaged'
 
@@ -38,8 +38,7 @@ export function Vocabulary({ wordStatus, savedWords, onRemoveSaved, onSaveWord }
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const allWords = useMemo(() => [...WORDS, ...savedWords], [savedWords])
-  const categories = savedWords.length > 0 ? [...CATEGORIES, SAVED_CATEGORY] : CATEGORIES
+  const { allWords, categories } = useWordPool(savedWords)
   const counts = useMemo(() => {
     const m: Record<string, number> = {}
     for (const w of allWords) m[w.category] = (m[w.category] ?? 0) + 1
