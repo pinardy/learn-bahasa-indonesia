@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { CategoryId, Word, WordStatus } from '../types'
 import { CATEGORIES, SAVED_CATEGORY, WORDS } from '../data/vocabulary'
 import { SpeakButton } from './SpeakButton'
+import { usePaged } from '../hooks/usePaged'
 
 interface VocabularyProps {
   wordStatus: Record<string, WordStatus>
@@ -15,7 +16,6 @@ const PAGE_SIZE = 30
 export function Vocabulary({ wordStatus, savedWords, onRemoveSaved, onSaveWord }: VocabularyProps) {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState<CategoryId | 'all'>('all')
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [showTopBtn, setShowTopBtn] = useState(false)
   const [adding, setAdding] = useState(false)
   const [newIndonesian, setNewIndonesian] = useState('')
@@ -31,10 +31,6 @@ export function Vocabulary({ wordStatus, savedWords, onRemoveSaved, onSaveWord }
     setAdding(false)
     setCategory('saved')
   }
-
-  useEffect(() => {
-    setVisibleCount(PAGE_SIZE)
-  }, [search, category])
 
   useEffect(() => {
     const onScroll = () => setShowTopBtn(window.scrollY > 300)
@@ -58,6 +54,13 @@ export function Vocabulary({ wordStatus, savedWords, onRemoveSaved, onSaveWord }
       return w.indonesian.toLowerCase().includes(q) || w.english.toLowerCase().includes(q)
     })
   }, [search, category, allWords])
+
+  const paged = usePaged(filtered, PAGE_SIZE)
+  const resetPaging = paged.reset
+  // collapse back to the first page whenever the filter changes
+  useEffect(() => {
+    resetPaging()
+  }, [search, category, resetPaging])
 
   return (
     <div className="vocabulary">
@@ -132,7 +135,7 @@ export function Vocabulary({ wordStatus, savedWords, onRemoveSaved, onSaveWord }
         <p className="vocab-empty">No words match “{search}”.</p>
       ) : (
         <ul className="vocab-list">
-          {filtered.slice(0, visibleCount).map((w) => {
+          {paged.visible.map((w) => {
             const status = wordStatus[w.id] ?? 'new'
             return (
               <li key={w.id} className="vocab-item">
@@ -167,12 +170,9 @@ export function Vocabulary({ wordStatus, savedWords, onRemoveSaved, onSaveWord }
         </ul>
       )}
 
-      {filtered.length > visibleCount && (
-        <button
-          className="btn btn-ghost show-more"
-          onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-        >
-          Show more ({filtered.length - visibleCount} remaining)
+      {paged.remaining > 0 && (
+        <button className="btn btn-ghost show-more" onClick={paged.showMore}>
+          Show more ({paged.remaining} remaining)
         </button>
       )}
 

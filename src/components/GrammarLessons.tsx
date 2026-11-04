@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { GRAMMAR_LESSONS } from '../data/grammarLessons'
 import { SpeakButton } from './SpeakButton'
+import { accuracyPct } from '../utils'
 
 interface GrammarLessonsProps {
   byTopic: Record<string, { correct: number; total: number }>
@@ -19,8 +20,7 @@ export function GrammarLessons({ byTopic }: GrammarLessonsProps) {
       <ul className="lesson-list">
         {GRAMMAR_LESSONS.map((lesson) => {
           const stats = byTopic[lesson.topic]
-          const accuracy =
-            stats && stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : null
+          const accuracy = accuracyPct(stats)
           const isOpen = open === lesson.topic
           return (
             <li key={lesson.topic} className={`lesson-item ${isOpen ? 'lesson-item-open' : ''}`}>
