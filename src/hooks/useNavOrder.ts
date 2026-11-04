@@ -7,8 +7,8 @@ import { STORAGE_KEYS } from '../storage'
  * scrollable container ref, the right-edge "more tabs" fade hint, and the
  * drag handlers. The caller renders the tabs and maps `navOrder` to items.
  */
-export function useNavOrder<T extends string>(loadOrder: () => T[]) {
-  const [navOrder, setNavOrder] = useState<T[]>(loadOrder)
+export function useNavOrder<T extends string>(defaultOrder: readonly T[]) {
+  const [navOrder, setNavOrder] = useState<T[]>(() => loadNavOrder(defaultOrder))
   const navRef = useRef<HTMLElement>(null)
   const [navHasMore, setNavHasMore] = useState(false)
 
@@ -37,4 +37,27 @@ export function useNavOrder<T extends string>(loadOrder: () => T[]) {
   }, [])
 
   return { navOrder, navRef, navHasMore, updateNavFade, dragView: dragging, wasDrag, pressProps }
+}
+
+/**
+ * Restore the user's custom tab order. Unknown entries are dropped, and tabs
+ * added in later versions (missing from the saved order) are appended in their
+ * default position.
+ */
+export function loadNavOrder<T extends string>(defaultOrder: readonly T[]): T[] {
+  const known = (v: unknown): v is T => (defaultOrder as readonly unknown[]).includes(v)
+  const withRest = (front: T[]) => [...front, ...defaultOrder.filter((v) => !front.includes(v))]
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.navOrder) ?? 'null')
+    if (Array.isArray(saved)) return withRest(saved.filter(known))
+    // Migrate from the old pin feature (pinned tabs floated to the front).
+    const pinned = JSON.parse(localStorage.getItem(STORAGE_KEYS.pinned) ?? '[]')
+    if (Array.isArray(pinned)) {
+      const front = pinned.filter(known)
+      if (front.length) return withRest(front)
+    }
+  } catch {
+    // corrupted storage — fall back to the default order
+  }
+  return [...defaultOrder]
 }

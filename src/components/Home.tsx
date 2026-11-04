@@ -10,11 +10,12 @@ import {
   serializeProgress,
 } from '../services/progressIO'
 import { LearningPath } from './LearningPath'
+import { ACTIVITY_ITEMS, type View } from '../views'
 
 interface HomeProps {
   progress: Progress
   dueCount: number
-  onNavigate: (view: string) => void
+  onNavigate: (view: View) => void
   onStartReview: () => void
   onOpenUnit: (categoryId: CategoryId) => void
   onStartCheckpoint: (categoryId: CategoryId) => void
@@ -66,16 +67,6 @@ export function Home({
   const quizAccuracy = accuracyPct(progress.quizStats)
   const grammarAccuracy = accuracyPct(progress.grammarStats)
 
-  const activities = [
-    { view: 'flashcards', emoji: '🃏', title: 'Flashcards', desc: 'Flip cards to memorize new words' },
-    { view: 'quiz', emoji: '❓', title: 'Quiz', desc: 'Test yourself with multiple choice' },
-    { view: 'sentences', emoji: '🧩', title: 'Sentence Builder', desc: 'Arrange words into sentences' },
-    { view: 'grammar', emoji: '📝', title: 'Grammar', desc: 'Fill in the blank, learn the rules' },
-    { view: 'numbers', emoji: '🔢', title: 'Numbers & Time', desc: 'Practice numbers and telling time' },
-    { view: 'phrases', emoji: '🗣️', title: 'Phrases', desc: 'Survival phrases and pronunciation' },
-    { view: 'vocabulary', emoji: '📖', title: 'Vocabulary', desc: 'Browse and search all words' },
-    { view: 'news', emoji: '📰', title: 'News', desc: 'Read real Indonesian news bilingually' },
-  ]
 
   return (
     <div className="home">
@@ -153,11 +144,11 @@ export function Home({
       </div>
 
       <div className="activity-grid">
-        {activities.map((a) => (
-          <button key={a.view} className="activity-card" onClick={() => onNavigate(a.view)}>
-            <span className="activity-emoji">{a.emoji}</span>
-            <span className="activity-title">{a.title}</span>
-            <span className="activity-desc">{a.desc}</span>
+        {ACTIVITY_ITEMS.map((item) => (
+          <button key={item.view} className="activity-card" onClick={() => onNavigate(item.view)}>
+            <span className="activity-emoji">{item.emoji}</span>
+            <span className="activity-title">{item.card.title}</span>
+            <span className="activity-desc">{item.card.desc}</span>
           </button>
         ))}
       </div>
