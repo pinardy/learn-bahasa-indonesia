@@ -1,0 +1,383 @@
+/* ===== News ===== */
+.news-tip {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 0 0 16px;
+}
+
+.news-offline {
+  background: var(--amber-soft);
+  color: var(--amber);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.news-loading {
+  display: flex;
+  justify-content: center;
+  padding: 56px 0;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 4px solid var(--border);
+  border-top-color: var(--red);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.news-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.news-toolbar-info {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink-soft);
+  font-size: 1.15rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.icon-btn:hover:not(:disabled) {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.icon-btn:disabled {
+  cursor: default;
+}
+
+.icon-btn-spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+.news-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.news-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.news-item:hover {
+  border-color: var(--red);
+}
+
+.news-item-expanded {
+  border-color: var(--red);
+}
+
+.news-item-head {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 14px 16px;
+  text-align: left;
+  align-items: center;
+}
+
+.news-thumb-wrap {
+  width: 84px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--border);
+  display: block;
+}
+
+.news-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(10px);
+  transform: scale(1.08); /* hide blur bleed at the edges */
+  transition: filter 0.4s ease, transform 0.4s ease;
+}
+
+.news-thumb-loaded {
+  filter: none;
+  transform: none;
+}
+
+.news-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.news-title {
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.news-meta {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.news-expand-hint {
+  color: var(--red);
+  font-weight: 700;
+}
+
+.news-score {
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 8px;
+  white-space: nowrap;
+}
+
+.news-score-high {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.news-score-mid {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.news-score-low {
+  background: var(--border);
+  color: var(--ink-soft);
+}
+
+.news-body {
+  padding: 0 16px 16px;
+  border-top: 1px dashed var(--border);
+}
+
+.news-snippet {
+  font-size: 1.02rem;
+  line-height: 1.7;
+  margin: 14px 0;
+}
+
+.news-word {
+  background: none;
+  border: none;
+  padding: 1px 3px;
+  font: inherit;
+  color: inherit;
+  border-radius: 4px;
+  /* persistent cue that words are tappable (hover is invisible on touch) */
+  text-decoration: underline dotted;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
+  transition: background 0.1s;
+}
+
+.news-word:hover,
+.news-word:active {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.news-word-known {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.news-word-learning {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.news-word-known:hover {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.tip-chip {
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-weight: 600;
+}
+
+.lookup-save-btn:disabled {
+  opacity: 0.6;
+}
+
+.news-word-lookup {
+  background: var(--amber-soft);
+  color: var(--amber);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 0.95rem;
+  margin-bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lookup-save-btn {
+  background: var(--amber);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: background 0.15s;
+}
+
+.lookup-save-btn:hover {
+  background: #935d10;
+}
+
+.lookup-saved-note {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.lookup-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.lookup-close:hover {
+  color: var(--ink);
+  background: var(--border);
+}
+
+.vocab-remove {
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  padding: 4px 6px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.vocab-remove:hover {
+  color: var(--red);
+  background: var(--red-soft);
+}
+
+.news-translation {
+  background: var(--green-soft);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+}
+
+.news-translation-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--green);
+}
+
+.news-translation-title {
+  font-weight: 700;
+  margin: 6px 0 4px;
+}
+
+.news-translation p {
+  margin: 4px 0 0;
+  line-height: 1.6;
+}
+
+.btn-small {
+  padding: 9px 16px;
+  font-size: 0.9rem;
+  margin-bottom: 14px;
+}
+
+.news-link {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--red);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.news-link:hover {
+  text-decoration: underline;
+}
+
+.sentence-reveal {
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+
+.listen-replay {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: none;
+  background: var(--red);
+  color: #fff;
+  font-size: 2.4rem;
+  line-height: 1;
+  margin: 8px auto 0;
+  display: block;
+  box-shadow: var(--shadow);
+  transition: transform 0.1s, background 0.15s;
+}
+
+.listen-replay:hover {
+  background: var(--red-dark);
+}
+
+.listen-replay:active {
+  transform: scale(0.94);
+}

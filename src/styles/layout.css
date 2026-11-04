@@ -1,0 +1,149 @@
+/* ===== Layout ===== */
+.app {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 20px 60px;
+}
+
+/* content stays a comfortable reading width; the header/nav may use the full column */
+.app-main {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.app-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  padding: 18px 0;
+  flex-wrap: wrap;
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 16px;
+  right: 0;
+}
+
+.brand {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--red);
+  padding: 0;
+  letter-spacing: -0.02em;
+}
+
+.brand-flag {
+  margin-right: 4px;
+}
+
+.app-nav-wrap {
+  flex-basis: 100%; /* own row below the brand */
+  position: relative;
+  min-width: 0;
+}
+
+.app-nav {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-nav::-webkit-scrollbar {
+  display: none;
+}
+
+/* Right-edge fade + chevron: signals more tabs (e.g. News) when the nav can
+   still scroll right. Hidden on wide screens and once scrolled to the end. */
+.app-nav-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0), var(--cream));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.app-nav-wrap.has-more::after {
+  opacity: 1;
+}
+
+.nav-scroll-hint {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--ink-soft);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.app-nav-wrap.has-more .nav-scroll-hint {
+  opacity: 0.8;
+}
+
+.nav-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+  background: none;
+  border-radius: 999px;
+  padding: 8px 11px;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  font-weight: 600;
+  user-select: none;
+  -webkit-user-select: none;
+  /* Keep hold-to-drag from triggering the iOS callout. `manipulation` (not
+     pan-x) so the browser still sends cancelable touchmoves — the drag handler
+     preventDefaults them to stop the nav scrolling mid-drag. */
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  transition: background 0.15s, color 0.15s;
+}
+
+/* Tab "lifted" by hold-and-drag while being rearranged. */
+.nav-btn-dragging {
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: var(--cream);
+  z-index: 1;
+  cursor: grabbing;
+}
+
+.nav-btn:hover {
+  background: rgba(206, 17, 38, 0.07);
+  color: var(--ink);
+}
+
+.nav-btn-active {
+  background: var(--red);
+  color: #fff;
+}
+
+.nav-btn-active:hover {
+  background: var(--red-dark);
+  color: #fff;
+}
+
+.app-main {
+  margin-top: 12px;
+}

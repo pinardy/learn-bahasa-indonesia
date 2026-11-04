@@ -1,0 +1,73 @@
+/* ===== Learning path ===== */
+.path-section {
+  margin-bottom: 26px;
+}
+
+.path-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.path-header h2 {
+  font-size: 1.15rem;
+  margin: 0;
+}
+
+.path-count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.path-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+
+.path-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 118px;
+  flex-shrink: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 10px;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.path-unit:hover:not(:disabled) {
+  border-color: var(--red);
+  transform: translateY(-1px);
+}
+
+.path-unit-current {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px var(--red-soft);
+}
+
+.path-unit-done {
+  border-color: var(--green);
+}
+
+.path-unit-locked {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.path-unit-ready {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 2px var(--amber-soft);
+}
+
+.path-unit-ready .path-progress {
+  color: var(--amber);
+  font-weight: 700;
+}

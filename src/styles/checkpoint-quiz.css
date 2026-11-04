@@ -1,0 +1,13 @@
+/* ===== Checkpoint quiz ===== */
+.checkpoint-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.checkpoint-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}

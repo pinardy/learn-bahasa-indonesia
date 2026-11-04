@@ -1,0 +1,73 @@
+/* ===== Responsive ===== */
+@media (max-width: 1000px) {
+  .app-nav {
+    gap: 4px;
+  }
+
+  .nav-btn {
+    padding: 8px 9px;
+    font-size: 0.86rem;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 960px) {
+  .nav-label {
+    display: none;
+  }
+
+  .nav-btn {
+    padding: 8px 12px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .flashcard {
+    height: 250px;
+  }
+
+  .hero h1 {
+    font-size: 1.7rem;
+  }
+}
+
+/* Touch devices: enlarge the most-used controls to a ~44px tap target.
+   Placed last so it overrides the width-based nav shrink above on phones. */
+@media (pointer: coarse) {
+  .nav-btn {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .pill {
+    padding: 10px 16px;
+  }
+
+  .sentence-dot {
+    width: 40px;
+    height: 40px;
+  }
+
+  .vocab-remove {
+    padding: 10px;
+  }
+
+  .lookup-save-btn {
+    padding: 8px 16px;
+  }
+
+  .speak-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 8px;
+  }
+}

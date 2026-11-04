@@ -1,0 +1,50 @@
+/* ===== Add your own word ===== */
+.add-word-toggle {
+  margin-bottom: 14px;
+}
+
+.add-word-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.add-word-form .typed-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.add-word-actions {
+  display: flex;
+  gap: 10px;
+  flex-basis: 100%;
+  justify-content: flex-end;
+}
+
+.path-emoji {
+  font-size: 1.4rem;
+}
+
+.path-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.path-progress {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.path-unit-done .path-progress {
+  color: var(--green);
+}
+
+.path-hint {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin: 6px 0 0;
+}
